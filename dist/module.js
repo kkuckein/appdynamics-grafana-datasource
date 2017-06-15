@@ -12,7 +12,3 @@ class AppDynamicsQueryOptionsCtrl {
 }
 AppDynamicsQueryOptionsCtrl.templateUrl = 'partials/query.options.html';
 exports.QueryOptionsCtrl = AppDynamicsQueryOptionsCtrl;
-class AppDynamicsAnnotationsQueryCtrl {
-}
-AppDynamicsAnnotationsQueryCtrl.templateUrl = 'partials/annotations.editor.html';
-exports.AnnotationsQueryCtrl = AppDynamicsAnnotationsQueryCtrl;

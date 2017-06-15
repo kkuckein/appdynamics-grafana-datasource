@@ -9,14 +9,9 @@ class AppDynamicsQueryOptionsCtrl {
     static templateUrl = 'partials/query.options.html';
 }
 
-class AppDynamicsAnnotationsQueryCtrl {
-    static templateUrl = 'partials/annotations.editor.html';
-}
-
 export {
     AppDynamicsDatasource as Datasource,
     AppDynamicsConfigCtrl as ConfigCtrl,
     AppDynamicsQueryCtrl as QueryCtrl,
-    AppDynamicsQueryOptionsCtrl as QueryOptionsCtrl,
-    AppDynamicsAnnotationsQueryCtrl as AnnotationsQueryCtrl
+    AppDynamicsQueryOptionsCtrl as QueryOptionsCtrl
 };

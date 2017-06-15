@@ -18,12 +18,32 @@ export class AppDynamicsDatasource {
     query(options) {
     console.log('OPTIONS');
     console.log(options);
+
     return this.backendSrv.datasourceRequest({
-      url: this.url + '/api/controllerflags',
+      url: this.url + '/controller/rest/applications/BDR Prod/metric-data',
       method: 'GET',
+      params: {
+                'metric-path': 'Business Transaction Performance|Business Transactions|Tier1|/product/indoor|Calls per Minute',
+                'time-range-type': 'BEFORE_NOW',
+                'duration-in-mins': 30,
+                'rollup': 'false',
+                'output': 'json'
+            },
       headers: { 'Content-Type': 'application/json' }
+    }).then ( (response) => {
+        return this.convertMetricData(response);
     });
   }
+    convertMetricData(metrics){
+        const response = {target: 'test',
+                          data: []
+                         };
+
+        metrics.data[0].metricValues.forEach( (metricValue) => {
+            response.data.push([metricValue.current, metricValue.startTimeInMillis]);
+        });
+        return response;
+    }
 
     testDatasource() {
         console.log('Test datasource');
@@ -39,8 +59,7 @@ export class AppDynamicsDatasource {
         }
 
     });
-    }
-
+}
     annotationQuery() {
         // TODO implement annotationQuery
     }
