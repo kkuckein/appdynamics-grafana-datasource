@@ -2,23 +2,20 @@
 
 
   <div class="gf-form-inline" ng-hide="ctrl.target.mode == 1">
-    <!-- Select Group -->
+
     <div class="gf-form max-width-20">
       <label class="gf-form-label query-keyword width-7">Application</label>
 
-			 <!-- IMPLEMENT GET TYPES-->
       <input type="text"
-        ng-model="ctrl.target.type.filter"
+        ng-model="ctrl.target.item.filter"
         bs-typeahead="ctrl.getApplicationNames"
         ng-blur="ctrl.onTargetBlur()"
         data-min-length=0
         data-items=100
         class="gf-form-input"
-        ng-class="{
-          'zbx-variable': ctrl.isVariable(ctrl.target.group.filter),
-          'zbx-regex': ctrl.isRegex(ctrl.target.group.filter)
-          }"></input>
+        >
     </div>
+
 		    <!-- Select Item -->
     <div class="gf-form">
       <label class="gf-form-label query-keyword width-7">Item</label>

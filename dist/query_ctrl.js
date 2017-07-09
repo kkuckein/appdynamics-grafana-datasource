@@ -21,10 +21,11 @@ var AppDynamicsQueryCtrl = (function (_super) {
         _this.uiSegmentSrv = uiSegmentSrv;
         return _this;
     }
-    AppDynamicsQueryCtrl.prototype.getOptions = function (query) {
+    AppDynamicsQueryCtrl.prototype.getApplicationNames = function (query) {
+        console.log(query);
         // Options have to be transformed by uiSegmentSrv to be usable by metric-segment-model directive
-        return this.datasource.metricFindQuery(query || '')
-            .then(this.uiSegmentSrv.transformToSegments(false));
+        //return this.datasource.getApplicationNames(query || '')
+        //.then(this.uiSegmentSrv.transformToSegments(false));
     };
     AppDynamicsQueryCtrl.prototype.toggleEditorMode = function () {
         this.target.rawQuery = !this.target.rawQuery;
