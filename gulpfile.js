@@ -21,10 +21,16 @@ gulp.task('partials', function () {
         .pipe(gulp.dest('dist/partials/'));
 });
 
+gulp.task('css', function () {
+    return gulp.src(['src/css/*'])
+        .pipe(gulp.dest('dist/css/'));
+});
+
 gulp.task('watch', ['compile'], () => {
     gulp.watch('src/**/*.ts', ['compile']);
     gulp.watch('src/**/*.json', ['assets']);
     gulp.watch('src/partials/*', ['partials']);
+    gulp.watch('src/css/*', ['css']);
 })
 
-gulp.task('default', ['watch', 'assets', 'partials']);
+gulp.task('default', ['watch', 'assets', 'partials', 'css']);
