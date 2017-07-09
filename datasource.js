@@ -1,7 +1,7 @@
 "use strict";
-exports.__esModule = true;
-var AppDynamicsDatasource = (function () {
-    function AppDynamicsDatasource(instanceSettings, $q, backendSrv, templateSrv) {
+Object.defineProperty(exports, "__esModule", { value: true });
+class AppDynamicsDatasource {
+    constructor(instanceSettings, $q, backendSrv, templateSrv) {
         this.$q = $q;
         this.backendSrv = backendSrv;
         this.templateSrv = templateSrv;
@@ -12,8 +12,7 @@ var AppDynamicsDatasource = (function () {
         this.tenant = instanceSettings.tenant;
     }
     // EITA PORRA
-    AppDynamicsDatasource.prototype.query = function (options) {
-        var _this = this;
+    query(options) {
         console.log('OPTIONS');
         console.log(options);
         return this.backendSrv.datasourceRequest({
@@ -27,27 +26,27 @@ var AppDynamicsDatasource = (function () {
                 'output': 'json'
             },
             headers: { 'Content-Type': 'application/json' }
-        }).then(function (response) {
+        }).then((response) => {
             console.log('RESPONSE:');
             console.log(response);
-            return _this.convertMetricData(response);
+            return this.convertMetricData(response);
         });
-    };
-    AppDynamicsDatasource.prototype.convertMetricData = function (metrics) {
-        var response = { data: [] };
+    }
+    convertMetricData(metrics) {
+        const response = { data: [] };
         response.data.push({ target: 'select metric',
             datapoints: [] });
         console.log(metrics.data);
-        metrics.data[0].metricValues.forEach(function (metricValue) {
+        metrics.data[0].metricValues.forEach((metricValue) => {
             response.data[0].datapoints.push([metricValue.current, metricValue.startTimeInMillis]);
         });
         return response;
-    };
-    AppDynamicsDatasource.prototype.testDatasource = function () {
+    }
+    testDatasource() {
         return this.backendSrv.datasourceRequest({
             url: this.url + '/api/controllerflags',
             method: 'GET'
-        }).then(function (response) {
+        }).then((response) => {
             if (response.status === 200) {
                 return { status: 'success', message: 'Data source is working', title: 'Success' };
             }
@@ -55,16 +54,16 @@ var AppDynamicsDatasource = (function () {
                 return { status: 'failure', message: 'Data source is not working', title: 'Failure' };
             }
         });
-    };
-    AppDynamicsDatasource.prototype.annotationQuery = function () {
+    }
+    annotationQuery() {
         // TODO implement annotationQuery
-    };
-    AppDynamicsDatasource.prototype.metricFindQuery = function () {
+    }
+    metricFindQuery() {
         console.log('Fuck my life');
         return this.backendSrv.datasourceRequest({
             url: this.url + '/api/controllerflags',
             method: 'GET'
-        }).then(function (response) {
+        }).then((response) => {
             if (response.status === 200) {
                 return { status: 'success', message: 'Data source is working', title: 'Success' };
             }
@@ -72,7 +71,6 @@ var AppDynamicsDatasource = (function () {
                 return { status: 'failure', message: 'Data source is not working', title: 'Failure' };
             }
         });
-    };
-    return AppDynamicsDatasource;
-}());
+    }
+}
 exports.AppDynamicsDatasource = AppDynamicsDatasource;

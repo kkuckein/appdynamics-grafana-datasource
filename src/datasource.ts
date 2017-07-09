@@ -7,7 +7,7 @@ export class AppDynamicsDatasource {
 
     constructor(instanceSettings, private $q, private backendSrv, private templateSrv) {
 
-        // Controller settings
+        // Controller settings porra
         this.username = instanceSettings.username;
         this.password = instanceSettings.password;
         this.url = instanceSettings.url;
