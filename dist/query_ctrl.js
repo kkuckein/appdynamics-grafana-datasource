@@ -19,14 +19,13 @@ var AppDynamicsQueryCtrl = (function (_super) {
         _this.uiSegmentSrv = uiSegmentSrv;
         _this.templateSrv = templateSrv;
         _this.uiSegmentSrv = uiSegmentSrv;
+        _this.appD = _this.datasource.appD;
+        _this.getApplicationNames = function (query, callback) {
+            _this.appD.getApplicationNames(query)
+                .then(callback);
+        };
         return _this;
     }
-    AppDynamicsQueryCtrl.prototype.getApplicationNames = function (query) {
-        console.log(query);
-        // Options have to be transformed by uiSegmentSrv to be usable by metric-segment-model directive
-        //return this.datasource.getApplicationNames(query || '')
-        //.then(this.uiSegmentSrv.transformToSegments(false));
-    };
     AppDynamicsQueryCtrl.prototype.toggleEditorMode = function () {
         this.target.rawQuery = !this.target.rawQuery;
     };

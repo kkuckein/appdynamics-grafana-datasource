@@ -16,34 +16,57 @@ export class AppDynamicsSDK {
     }
 
     query(options) {
+        console.log('OPTIONS');
+        console.log(options);
 
-    return this.backendSrv.datasourceRequest({
-      url: this.url + '/controller/rest/applications/BDR/metric-data',
-      method: 'GET',
-      params: {
-                'metric-path': 'Business Transaction Performance|Business Transactions|Java|/product/indoor|Calls per Minute',
-                'time-range-type': 'BEFORE_NOW',
-                'duration-in-mins': 60,
-                'rollup': 'false',
-                'output': 'json'
-            },
-      headers: { 'Content-Type': 'application/json' }
-    }).then ( (response) => {
-        console.log('RESPONSE:');
-        console.log(response);
-        return this.convertMetricData(response);
-    });
-  }
-    convertMetricData(metrics) {
-        const response = {data: []};
-        response.data.push({target: 'select metric',
-                            datapoints: []});
+        const grafanaResponse = {data: []};
 
-        console.log(metrics.data);
-        metrics.data[0].metricValues.forEach( (metricValue) => {
-            response.data[0].datapoints.push([metricValue.current, metricValue.startTimeInMillis]);
+        const requests = options.targets.map((target) => {
+            return new Promise((resolve) => {
+                console.log('MAP', target);
+                this.getMetrics(target, grafanaResponse, resolve);
+
+            });
         });
-        return response;
+
+        return Promise.all(requests).then( () => {
+            console.log(grafanaResponse)    ;
+            return grafanaResponse;
+        } );
+
+    }
+
+    getMetrics(target, grafanaResponse, callback) {
+        console.log('getMetrics', target);
+        return this.backendSrv.datasourceRequest({
+                url: this.url + '/controller/rest/applications/' + target.application + '/metric-data',
+                method: 'GET',
+                params: {
+                            'metric-path': target.metric,
+                            'time-range-type': 'BEFORE_NOW',
+                            'duration-in-mins': 60 * 6,
+                            'rollup': 'false',
+                            'output': 'json'
+                        },
+                headers: { 'Content-Type': 'application/json' }
+            }).then ( (response) => {
+                grafanaResponse.data.push({target: target.metric,
+                                           datapoints: this.convertMetricData(response, callback)});
+            }).then ( () => {
+                callback();
+            });
+    }
+
+    convertMetricData(metrics, resolve) {
+        console.log('convertMetricData');
+
+        const responseArray = [];
+
+        metrics.data[0].metricValues.forEach( (metricValue) => {
+            responseArray.push([metricValue.current, metricValue.startTimeInMillis]);
+        });
+
+        return responseArray;
     }
 
     testDatasource() {
@@ -67,15 +90,24 @@ export class AppDynamicsSDK {
         console.log('Trying to get data');
         console.log(query);
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/api/controllerflags',
-            method: 'GET'
+            url: this.url + '/controller/rest/applications',
+            method: 'GET',
+            params: { output: 'json'}
             }).then( (response) => {
                 if (response.status === 200) {
-                    return { status: 'success', message: 'Data source is working', title: 'Success' };
+                    return this.getFilteredAppNames(query, response.data);
                 }else {
-                    return { status: 'failure', message: 'Data source is not working', title: 'Failure' };
+                    return [];
                 }
 
             });
+    }
+
+    getFilteredAppNames(query, apps) {
+
+        const appNames = apps.map( (app) =>  app.name);
+        return appNames.filter( (app) => {
+            return app.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+        });
     }
 }

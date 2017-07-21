@@ -1,36 +1,38 @@
 <query-editor-row query-ctrl="ctrl" can-collapse="false">
 
 
-  <div class="gf-form-inline" ng-hide="ctrl.target.mode == 1">
+  <div class="gf-form-inline">
 
-    <div class="gf-form max-width-20">
-      <label class="gf-form-label query-keyword width-7">Application</label>
+     <div class="gf-form">
+        <label class="gf-form-label width-8">Application</label>
+        <input type="text"
+              class="gf-form-input"
+              ng-model="ctrl.target.application"
+              spellcheck='false'
+              bs-typeahead="ctrl.getApplicationNames"
+              match-all="true"
+              min-length="1"
+              placeholder="Application"
+              data-min-length=0 data-items=100
+              ng-blur="ctrl.onChangeInternal()">
+        </input>
+      </div>
 
-      <input type="text"
-        ng-model="ctrl.target.item.filter"
-        bs-typeahead="ctrl.getApplicationNames"
-        ng-blur="ctrl.onTargetBlur()"
-        data-min-length=0
-        data-items=100
-        class="gf-form-input"
-        >
-    </div>
-
-		    <!-- Select Item -->
-    <div class="gf-form">
-      <label class="gf-form-label query-keyword width-7">Item</label>
-      <input type="text"
-        ng-model="ctrl.target.item.filter"
-        bs-typeahead="ctrl.getItemNames"
-        ng-blur="ctrl.onTargetBlur()"
-        data-min-length=0
-        data-items=100
-        class="gf-form-input"
-        ng-class="{
-          'zbx-variable': ctrl.isVariable(ctrl.target.item.filter),
-          'zbx-regex': ctrl.isRegex(ctrl.target.item.filter)
-        }">
-    </div>
+      <div class="gf-form  gf-form--grow">
+        <label class="gf-form-label width-8">Metric</label>
+        <input type="text"
+              class="gf-form-input"
+              ng-model="ctrl.target.metric"
+              spellcheck='false'
+              bs-typeahead="ctrl.getApplicationNames"
+              match-all="true"
+              min-length="1"
+              placeholder="MetricPath"
+              data-min-length=0 data-items=100
+              ng-blur="ctrl.onChangeInternal()">
+        </input>
+      </div>
+</div>
 
 
 </query-editor-row>

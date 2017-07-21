@@ -4,19 +4,20 @@ import { QueryCtrl } from 'app/plugins/sdk';
 export class AppDynamicsQueryCtrl extends QueryCtrl {
 
     static templateUrl = 'partials/query.editor.html';
+    appD: any;
+    getApplicationNames: any;
 
-    constructor($scope, $injector, private $q, private uiSegmentSrv, private templateSrv)  { 
+    constructor($scope, $injector, private $q, private uiSegmentSrv, private templateSrv)  {
         super($scope, $injector);
 
         this.uiSegmentSrv = uiSegmentSrv;
+        this.appD = this.datasource.appD;
 
-    }
+        this.getApplicationNames = (query, callback) => {
+            this.appD.getApplicationNames(query)
+            .then(callback);
+        };
 
-    getApplicationNames(query) {
-        console.log(query);
-        // Options have to be transformed by uiSegmentSrv to be usable by metric-segment-model directive
-        //return this.datasource.getApplicationNames(query || '')
-        //.then(this.uiSegmentSrv.transformToSegments(false));
     }
 
     toggleEditorMode() {
