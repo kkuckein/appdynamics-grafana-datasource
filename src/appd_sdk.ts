@@ -50,7 +50,11 @@ export class AppDynamicsSDK {
                         },
                 headers: { 'Content-Type': 'application/json' }
             }).then ( (response) => {
-                grafanaResponse.data.push({target: target.metric,
+
+                const dividers = target.metric.split('|');
+
+                const legend = dividers.length > 3 ? dividers[3] : dividers[dividers.length - 1];
+                grafanaResponse.data.push({target: target.application + ' - ' + legend,
                                            datapoints: this.convertMetricData(response, callback)});
             }).then ( () => {
                 callback();
