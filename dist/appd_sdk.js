@@ -40,7 +40,9 @@ var AppDynamicsSDK = (function () {
             },
             headers: { 'Content-Type': 'application/json' }
         }).then(function (response) {
-            grafanaResponse.data.push({ target: target.metric,
+            var dividers = target.metric.split('|');
+            var legend = dividers.length > 3 ? dividers[3] : dividers[dividers.length - 1];
+            grafanaResponse.data.push({ target: target.application + ' - ' + legend,
                 datapoints: _this.convertMetricData(response, callback) });
         }).then(function () {
             callback();

@@ -44,7 +44,7 @@ export class AppDynamicsSDK {
                 params: {
                             'metric-path': target.metric,
                             'time-range-type': 'BEFORE_NOW',
-                            'duration-in-mins': 60 * 6,
+                            'duration-in-mins': 60 * 6,  // TODO: Actually use what Grafana is sending for the times
                             'rollup': 'false',
                             'output': 'json'
                         },
