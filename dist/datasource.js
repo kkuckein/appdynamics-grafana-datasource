@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var appd_sdk_1 = require("./appd_sdk");
 var AppDynamicsDatasource = (function () {
     function AppDynamicsDatasource(instanceSettings, $q, backendSrv, templateSrv) {

@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var dateMath = require("app/core/utils/datemath");
 var AppDynamicsSDK = (function () {
     function AppDynamicsSDK(instanceSettings, backendSrv) {
