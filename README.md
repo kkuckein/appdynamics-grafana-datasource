@@ -11,8 +11,8 @@ The plugin is not yet on the grafana plugins list, so it can't be installed with
 With the commands below, grafana will start on localhost:3000 (192.168.99.1:3000 if on windows)
 Any changes you make to the code will be synced with the docker container, which us useful.
 
-1. git clone https://github.com/dlopes7/appdynamics-grafana-datasource
-2. docker run -d -p 3000:3000 --name grafana -v `pwd`:/var/lib/grafana/plugins/appdynamics-grafana-datasource/ grafana/grafana
+1. ``git clone https://github.com/dlopes7/appdynamics-grafana-datasource``
+2. ``docker run -d -p 3000:3000 --name grafana -v `pwd`:/var/lib/grafana/plugins/appdynamics-grafana-datasource/ grafana/grafana``
 
 ## Without docker
 
