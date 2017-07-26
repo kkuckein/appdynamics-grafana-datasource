@@ -26,11 +26,17 @@ gulp.task('css', function () {
         .pipe(gulp.dest('dist/css/'));
 });
 
+gulp.task('img', function () {
+    return gulp.src(['src/img/*'])
+        .pipe(gulp.dest('dist/img/'));
+});
+
 gulp.task('watch', ['compile'], () => {
     gulp.watch('src/**/*.ts', ['compile']);
     gulp.watch('src/**/*.json', ['assets']);
     gulp.watch('src/partials/*', ['partials']);
     gulp.watch('src/css/*', ['css']);
+    gulp.watch('src/img/*', ['img']);
 })
 
-gulp.task('default', ['watch', 'assets', 'partials', 'css']);
+gulp.task('default', ['watch', 'assets', 'partials', 'css', 'img']);
