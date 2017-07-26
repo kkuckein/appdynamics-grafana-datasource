@@ -1,5 +1,9 @@
 # AppDynamics Grafana Datasource
 
+AppDynamics datasource for grafana.
+
+![example_dashboard](http://imgur.com/MIBYyCY.jpg)
+
 ## With docker
 
 The plugin is not yet on the grafana plugins list, so it can't be installed with grafana-cli.
