@@ -32,7 +32,7 @@ var AppDynamicsQueryCtrl = (function (_super) {
     AppDynamicsQueryCtrl.prototype.onChangeInternal = function () {
         this.panelCtrl.refresh(); // Asks the panel to refresh data.
     };
+    AppDynamicsQueryCtrl.templateUrl = 'partials/query.editor.html';
     return AppDynamicsQueryCtrl;
 }(sdk_1.QueryCtrl));
-AppDynamicsQueryCtrl.templateUrl = 'partials/query.editor.html';
 exports.AppDynamicsQueryCtrl = AppDynamicsQueryCtrl;
