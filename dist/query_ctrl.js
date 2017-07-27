@@ -24,6 +24,10 @@ var AppDynamicsQueryCtrl = (function (_super) {
             _this.appD.getApplicationNames(query)
                 .then(callback);
         };
+        _this.getMetricNames = function (query, callback) {
+            _this.appD.getMetricNames(_this.target.application, query)
+                .then(callback);
+        };
         return _this;
     }
     AppDynamicsQueryCtrl.prototype.toggleEditorMode = function () {
