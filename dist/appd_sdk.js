@@ -116,7 +116,7 @@ var AppDynamicsSDK = (function () {
         if (query.indexOf('|') > -1) {
             prefix = query.slice(0, query.lastIndexOf('|') + 1);
         }
-        var elements = arrayResponse.map(function (element) { return prefix + element.name; });
+        var elements = arrayResponse.map(function (element) { return prefix + element.name + (element.type === 'folder' ? '|' : ''); });
         return elements.filter(function (element) {
             return element.toLowerCase().indexOf(query.toLowerCase()) !== -1;
         });

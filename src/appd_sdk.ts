@@ -138,7 +138,7 @@ export class AppDynamicsSDK {
             prefix = query.slice(0, query.lastIndexOf('|') + 1);
         }
 
-        const elements = arrayResponse.map( (element) =>  prefix + element.name);
+        const elements = arrayResponse.map( (element) =>  prefix + element.name + (element.type === 'folder' ? '|' : '' ));
         return elements.filter( (element) => {
             return element.toLowerCase().indexOf(query.toLowerCase()) !== -1;
         });
