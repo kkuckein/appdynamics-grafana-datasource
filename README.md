@@ -8,7 +8,7 @@ AppDynamics datasource for grafana.
 
 The plugin is not yet on the grafana plugins list, so it can't be installed with grafana-cli.
 
-With the commands below, grafana will start on localhost:3000 (192.168.99.1:3000 if on windows)
+With the commands below, grafana will start on localhost:3000 (192.168.99.100:3000 if on windows)
 Any changes you make to the code will be synced with the docker container, which us useful.
 
 1. ``git clone https://github.com/dlopes7/appdynamics-grafana-datasource``
