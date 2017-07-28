@@ -23,7 +23,7 @@ Any changes you make to the code will be synced with the docker container, which
 
 Use proxy access (to avoid CORS and users looking up your password) and basic authentication.
 
-![config](http://i.imgur.com/NsSTbDn.png)
+![config](http://i.imgur.com/ayL8kFO.jpg)
 
 ## For the devs out there:
 
