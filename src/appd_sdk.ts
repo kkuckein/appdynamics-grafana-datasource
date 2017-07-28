@@ -51,23 +51,24 @@ export class AppDynamicsSDK {
                 headers: { 'Content-Type': 'application/json' }
             }).then ( (response) => {
 
-                const dividers = target.metric.split('|');
-                const legend = dividers.length > 3 ? dividers[3] : dividers[dividers.length - 1];
-                grafanaResponse.data.push({target: target.application + ' - ' + legend,
-                                           datapoints: this.convertMetricData(response, callback)});
+                response.data.forEach( (metricElement) => {
+                    const dividers = metricElement.metricPath.split('|');
+                    const legend = dividers.length > 3 ? dividers[3] : dividers[dividers.length - 1];
+                    grafanaResponse.data.push({target: legend,
+                                               datapoints: this.convertMetricData(metricElement, callback)});
+                });
             }).then ( () => {
                 callback();
             });
     }
 
-    convertMetricData(metrics, resolve) {
+    convertMetricData(metricElement, resolve) {
         const responseArray = [];
 
-        if (metrics.data.length > 0) {
-            metrics.data[0].metricValues.forEach( (metricValue) => {
+        metricElement.metricValues.forEach( (metricValue) => {
             responseArray.push([metricValue.current, metricValue.startTimeInMillis]);
-            });
-        }
+        });
+
         return responseArray;
     }
 

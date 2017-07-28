@@ -39,21 +39,21 @@ var AppDynamicsSDK = (function () {
             },
             headers: { 'Content-Type': 'application/json' }
         }).then(function (response) {
-            var dividers = target.metric.split('|');
-            var legend = dividers.length > 3 ? dividers[3] : dividers[dividers.length - 1];
-            grafanaResponse.data.push({ target: target.application + ' - ' + legend,
-                datapoints: _this.convertMetricData(response, callback) });
+            response.data.forEach(function (metricElement) {
+                var dividers = metricElement.metricPath.split('|');
+                var legend = dividers.length > 3 ? dividers[3] : dividers[dividers.length - 1];
+                grafanaResponse.data.push({ target: legend,
+                    datapoints: _this.convertMetricData(metricElement, callback) });
+            });
         }).then(function () {
             callback();
         });
     };
-    AppDynamicsSDK.prototype.convertMetricData = function (metrics, resolve) {
+    AppDynamicsSDK.prototype.convertMetricData = function (metricElement, resolve) {
         var responseArray = [];
-        if (metrics.data.length > 0) {
-            metrics.data[0].metricValues.forEach(function (metricValue) {
-                responseArray.push([metricValue.current, metricValue.startTimeInMillis]);
-            });
-        }
+        metricElement.metricValues.forEach(function (metricValue) {
+            responseArray.push([metricValue.current, metricValue.startTimeInMillis]);
+        });
         return responseArray;
     };
     AppDynamicsSDK.prototype.testDatasource = function () {
