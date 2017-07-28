@@ -1,5 +1,10 @@
 import * as dateMath from 'app/core/utils/datemath';
 
+/*
+    This is the class where all AppD logic should reside.
+    This gets Application Names, Metric Names and queries the API
+*/
+
 export class AppDynamicsSDK {
 
     username: string;
@@ -9,7 +14,7 @@ export class AppDynamicsSDK {
 
     constructor(instanceSettings, private backendSrv) {
 
-        // Controller settings porra
+        // Controller settings
         this.username = instanceSettings.username;
         this.password = instanceSettings.password;
         this.url = instanceSettings.url;
@@ -23,6 +28,7 @@ export class AppDynamicsSDK {
 
         const grafanaResponse = {data: []};
 
+        // For each one of the metrics the user entered:
         const requests = options.targets.map((target) => {
             return new Promise((resolve) => {
                 this.getMetrics(target, grafanaResponse, startTime, endTime, resolve);
@@ -51,6 +57,8 @@ export class AppDynamicsSDK {
                 headers: { 'Content-Type': 'application/json' }
             }).then ( (response) => {
 
+                // A single metric can have multiple results if the user chose to use a wildcard
+                // Iterates on every result.
                 response.data.forEach( (metricElement) => {
                     const dividers = metricElement.metricPath.split('|');
                     const legend = dividers.length > 3 ? dividers[3] : metricElement.metricPath;
@@ -62,6 +70,7 @@ export class AppDynamicsSDK {
             });
     }
 
+    // This helper method just converts the AppD response to the Grafana format
     convertMetricData(metricElement, resolve) {
         const responseArray = [];
 
@@ -74,7 +83,7 @@ export class AppDynamicsSDK {
 
     testDatasource() {
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/api/controllerflags',
+            url: this.url + '/api/controllerflags', // TODO: Change this to a faster controller api call.
             method: 'GET'
             }).then( (response) => {
                 if (response.status === 200) {
@@ -139,7 +148,10 @@ export class AppDynamicsSDK {
             prefix = query.slice(0, query.lastIndexOf('|') + 1);
         }
 
+        // Here we are obtaining an array of elements, if they happen to be of type folder, we add a '|' to help the user.
         const elements = arrayResponse.map( (element) =>  prefix + element.name + (element.type === 'folder' ? '|' : '' ));
+
+        // Only return the elements that match what the user typed, this is the essence of autocomplete.
         return elements.filter( (element) => {
             return element.toLowerCase().indexOf(query.toLowerCase()) !== -1;
         });
