@@ -2,7 +2,7 @@
 
 AppDynamics datasource for grafana.
 
-![example_dashboard](http://imgur.com/MIBYyCY.jpg)
+![example_dashboard](http://imgur.com/ayL8kFO.jpg)
 
 ## With docker
 
