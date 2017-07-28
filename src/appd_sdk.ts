@@ -53,7 +53,7 @@ export class AppDynamicsSDK {
 
                 response.data.forEach( (metricElement) => {
                     const dividers = metricElement.metricPath.split('|');
-                    const legend = dividers.length > 3 ? dividers[3] : dividers[dividers.length - 1];
+                    const legend = dividers.length > 3 ? dividers[3] : metricElement.metricPath;
                     grafanaResponse.data.push({target: legend,
                                                datapoints: this.convertMetricData(metricElement, callback)});
                 });

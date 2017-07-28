@@ -41,7 +41,7 @@ var AppDynamicsSDK = (function () {
         }).then(function (response) {
             response.data.forEach(function (metricElement) {
                 var dividers = metricElement.metricPath.split('|');
-                var legend = dividers.length > 3 ? dividers[3] : dividers[dividers.length - 1];
+                var legend = dividers.length > 3 ? dividers[3] : metricElement.metricPath;
                 grafanaResponse.data.push({ target: legend,
                     datapoints: _this.convertMetricData(metricElement, callback) });
             });
