@@ -48,15 +48,15 @@ var AppDynamicsSDK = (function () {
             // Iterates on every result.
             response.data.forEach(function (metricElement) {
                 var pathSplit = metricElement.metricPath.split('|');
-                var legend = target.useCaptureGroups ? target.application + ' - ' : '';
+                var legend = target.transformLegend ? target.application + ' - ' : '';
                 // Legend options
                 switch (target.transformLegend) {
-                    case 'Segments':
+                    case 'Segments':// TODO: Maybe a Regex option as well
                         var segments = target.transformLegendText.split(',');
                         for (var i = 0; i < segments.length; i++) {
                             var segment = Number(segments[i]) - 1;
                             if (segment < pathSplit.length) {
-                                legend += pathSplit[segment] + (i == (segments.length - 1) ? '' : '|');
+                                legend += pathSplit[segment] + (i === (segments.length - 1) ? '' : '|');
                             }
                         }
                         break;
@@ -123,7 +123,6 @@ var AppDynamicsSDK = (function () {
             params: params
         }).then(function (response) {
             if (response.status === 200) {
-                console.log(response.data);
                 return _this.getFilteredNames(query, response.data);
             }
             else {
