@@ -146,7 +146,6 @@ export class AppDynamicsSDK {
             params
             }).then( (response) => {
                 if (response.status === 200) {
-                    console.log(response.data);
                     return this.getFilteredNames(query, response.data);
                 }else {
                     return [];
