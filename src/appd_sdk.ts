@@ -60,8 +60,26 @@ export class AppDynamicsSDK {
                 // A single metric can have multiple results if the user chose to use a wildcard
                 // Iterates on every result.
                 response.data.forEach( (metricElement) => {
-                    const dividers = metricElement.metricPath.split('|');
-                    const legend = dividers.length > 3 ? dividers[3] : metricElement.metricPath;
+
+                    const pathSplit = metricElement.metricPath.split('|');
+                    let legend = target.useCaptureGroups ? target.application + ' - ' : '' ;
+
+                    // Legend options
+                    switch (target.transformLegend) {
+                        case 'Segments': // TODO: Maybe a Regex option as well
+                            const segments = target.transformLegendText.split(',');
+                            for (let i = 0; i < segments.length; i++) {
+                                const segment = Number(segments[i]) - 1;
+                                if (segment < pathSplit.length) {
+                                    legend += pathSplit[segment] + (i === (segments.length - 1) ? '' : '|');
+                                }
+                            }
+                            break;
+
+                        default:
+                            legend += metricElement.metricPath;
+                    }
+
                     grafanaResponse.data.push({target: legend,
                                                datapoints: this.convertMetricData(metricElement, callback)});
                 });

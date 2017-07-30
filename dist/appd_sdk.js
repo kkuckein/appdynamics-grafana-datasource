@@ -47,8 +47,22 @@ var AppDynamicsSDK = (function () {
             // A single metric can have multiple results if the user chose to use a wildcard
             // Iterates on every result.
             response.data.forEach(function (metricElement) {
-                var dividers = metricElement.metricPath.split('|');
-                var legend = dividers.length > 3 ? dividers[3] : metricElement.metricPath;
+                var pathSplit = metricElement.metricPath.split('|');
+                var legend = target.useCaptureGroups ? target.application + ' - ' : '';
+                // Legend options
+                switch (target.transformLegend) {
+                    case 'Segments':
+                        var segments = target.transformLegendText.split(',');
+                        for (var i = 0; i < segments.length; i++) {
+                            var segment = Number(segments[i]) - 1;
+                            if (segment < pathSplit.length) {
+                                legend += pathSplit[segment] + (i == (segments.length - 1) ? '' : '|');
+                            }
+                        }
+                        break;
+                    default:
+                        legend += metricElement.metricPath;
+                }
                 grafanaResponse.data.push({ target: legend,
                     datapoints: _this.convertMetricData(metricElement, callback) });
             });
