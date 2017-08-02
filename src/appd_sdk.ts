@@ -62,7 +62,7 @@ export class AppDynamicsSDK {
                 response.data.forEach( (metricElement) => {
 
                     const pathSplit = metricElement.metricPath.split('|');
-                    let legend = target.transformLegend ? target.application + ' - ' : '' ;
+                    let legend = target.showAppOnLegend ? target.application + ' - ' : '' ;
 
                     // Legend options
                     switch (target.transformLegend) {

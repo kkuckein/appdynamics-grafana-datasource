@@ -48,7 +48,7 @@ var AppDynamicsSDK = (function () {
             // Iterates on every result.
             response.data.forEach(function (metricElement) {
                 var pathSplit = metricElement.metricPath.split('|');
-                var legend = target.transformLegend ? target.application + ' - ' : '';
+                var legend = target.showAppOnLegend ? target.application + ' - ' : '';
                 // Legend options
                 switch (target.transformLegend) {
                     case 'Segments':// TODO: Maybe a Regex option as well
