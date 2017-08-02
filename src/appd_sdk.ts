@@ -101,13 +101,15 @@ export class AppDynamicsSDK {
 
     testDatasource() {
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/api/controllerflags', // TODO: Change this to a faster controller api call.
-            method: 'GET'
+            url: this.url + '/controller/rest/applications', // TODO: Change this to a faster controller api call.
+            method: 'GET',
+            params: { output: 'json'}
             }).then( (response) => {
                 if (response.status === 200) {
-                    return { status: 'success', message: 'Data source is working', title: 'Success' };
+                    const numberOfApps = response.data.length;
+                    return { status: 'success', message: 'Data source is working, found ' + numberOfApps + ' apps', title: 'Success' };
                 }else {
-                    return { status: 'failure', message: 'Data source is not working', title: 'Failure' };
+                    return { status: 'failure', message: 'Data source is not working: ' + response.status, title: 'Failure' };
                 }
 
             });

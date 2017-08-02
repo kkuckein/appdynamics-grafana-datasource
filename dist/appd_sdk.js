@@ -80,14 +80,16 @@ var AppDynamicsSDK = (function () {
     };
     AppDynamicsSDK.prototype.testDatasource = function () {
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/api/controllerflags',
-            method: 'GET'
+            url: this.url + '/controller/rest/applications',
+            method: 'GET',
+            params: { output: 'json' }
         }).then(function (response) {
             if (response.status === 200) {
-                return { status: 'success', message: 'Data source is working', title: 'Success' };
+                var numberOfApps = response.data.length;
+                return { status: 'success', message: 'Data source is working, found ' + numberOfApps + ' apps', title: 'Success' };
             }
             else {
-                return { status: 'failure', message: 'Data source is not working', title: 'Failure' };
+                return { status: 'failure', message: 'Data source is not working: ' + response.status, title: 'Failure' };
             }
         });
     };
