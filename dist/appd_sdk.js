@@ -74,7 +74,7 @@ var AppDynamicsSDK = (function () {
     AppDynamicsSDK.prototype.convertMetricData = function (metricElement, resolve) {
         var responseArray = [];
         metricElement.metricValues.forEach(function (metricValue) {
-            responseArray.push([metricValue.current, metricValue.startTimeInMillis]);
+            responseArray.push([metricValue.value, metricValue.startTimeInMillis]);
         });
         return responseArray;
     };
