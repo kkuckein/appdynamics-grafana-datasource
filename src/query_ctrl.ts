@@ -9,15 +9,30 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
     getMetricNames: any;
     transformLegendOptions: object[];
 
+    applicationSegment: any;
+    // metricSegment: any;
+
+    metricPath: string[];
+
     constructor($scope, $injector, private $q, private uiSegmentSrv, private templateSrv)  {
         super($scope, $injector);
 
         this.uiSegmentSrv = uiSegmentSrv;
         this.appD = this.datasource.appD;
 
-        this.getApplicationNames = (query, callback) => {
-            this.appD.getApplicationNames(query)
-            .then(callback);
+        this.target.application = this.target.application || 'Application';
+        this.applicationSegment = uiSegmentSrv.newSegment(this.target.application);
+
+        // this.target.metric = this.target.metric || 'Select a metric path';
+        // this.metricSegment = uiSegmentSrv.newSegment(this.target.metric);
+
+        // this.metricPath = ['David'];
+
+        console.log(this.applicationSegment);
+
+        this.getApplicationNames = (query) => {
+            return this.appD.getApplicationNames(query)
+            .then(this.transformToSegments(false));
         };
 
         this.getMetricNames = (query, callback) => {
@@ -27,6 +42,16 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
 
     }
 
+    appChanged() {
+        this.target.application = this.applicationSegment.value;
+        this.panelCtrl.refresh();
+    }
+
+    metricChanged() {
+        this.target.metric = this.metricSegment.value;
+        this.panelCtrl.refresh();
+    }
+
     toggleEditorMode() {
         this.target.rawQuery = !this.target.rawQuery;
     }
@@ -34,4 +59,18 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
     onChangeInternal() {
         this.panelCtrl.refresh(); // Asks the panel to refresh data.
     }
+
+    transformToSegments(addTemplateVars) {
+
+        return (results) => {
+
+            const segments = results.map( (segment) => {
+                return this.uiSegmentSrv.newSegment({ value: segment });
+            });
+
+            console.log(segments);
+            return segments;
+        };
+  }
+
 }
