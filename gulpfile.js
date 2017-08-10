@@ -34,6 +34,7 @@ gulp.task('img', function () {
 gulp.task('watch', ['compile'], () => {
     gulp.watch('src/**/*.ts', ['compile']);
     gulp.watch('src/**/*.json', ['assets']);
+    gulp.watch('src/**/*.md', ['assets']);
     gulp.watch('src/partials/*', ['partials']);
     gulp.watch('src/css/*', ['css']);
     gulp.watch('src/img/*', ['img']);
