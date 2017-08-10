@@ -20,9 +20,15 @@ var AppDynamicsQueryCtrl = (function (_super) {
         _this.templateSrv = templateSrv;
         _this.uiSegmentSrv = uiSegmentSrv;
         _this.appD = _this.datasource.appD;
-        _this.getApplicationNames = function (query, callback) {
-            _this.appD.getApplicationNames(query)
-                .then(callback);
+        _this.target.application = _this.target.application || 'Application';
+        _this.applicationSegment = uiSegmentSrv.newSegment(_this.target.application);
+        // this.target.metric = this.target.metric || 'Select a metric path';
+        // this.metricSegment = uiSegmentSrv.newSegment(this.target.metric);
+        // this.metricPath = ['David'];
+        console.log(_this.applicationSegment);
+        _this.getApplicationNames = function (query) {
+            return _this.appD.getApplicationNames(query)
+                .then(_this.transformToSegments(false));
         };
         _this.getMetricNames = function (query, callback) {
             _this.appD.getMetricNames(_this.target.application, query)
@@ -30,11 +36,29 @@ var AppDynamicsQueryCtrl = (function (_super) {
         };
         return _this;
     }
+    AppDynamicsQueryCtrl.prototype.appChanged = function () {
+        this.target.application = this.applicationSegment.value;
+        this.panelCtrl.refresh();
+    };
+    AppDynamicsQueryCtrl.prototype.metricChanged = function () {
+        this.target.metric = this.metricSegment.value;
+        this.panelCtrl.refresh();
+    };
     AppDynamicsQueryCtrl.prototype.toggleEditorMode = function () {
         this.target.rawQuery = !this.target.rawQuery;
     };
     AppDynamicsQueryCtrl.prototype.onChangeInternal = function () {
         this.panelCtrl.refresh(); // Asks the panel to refresh data.
+    };
+    AppDynamicsQueryCtrl.prototype.transformToSegments = function (addTemplateVars) {
+        var _this = this;
+        return function (results) {
+            var segments = results.map(function (segment) {
+                return _this.uiSegmentSrv.newSegment({ value: segment });
+            });
+            console.log(segments);
+            return segments;
+        };
     };
     AppDynamicsQueryCtrl.templateUrl = 'partials/query.editor.html';
     return AppDynamicsQueryCtrl;

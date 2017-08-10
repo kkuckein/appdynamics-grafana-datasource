@@ -68,6 +68,10 @@ var AppDynamicsSDK = (function () {
             });
         }).then(function () {
             callback();
+        })
+            .catch(function (err) {
+            console.log(err);
+            callback();
         });
     };
     // This helper method just converts the AppD response to the Grafana format
@@ -141,10 +145,15 @@ var AppDynamicsSDK = (function () {
         }
         // Here we are obtaining an array of elements, if they happen to be of type folder, we add a '|' to help the user.
         var elements = arrayResponse.map(function (element) { return prefix + element.name + (element.type === 'folder' ? '|' : ''); });
-        // Only return the elements that match what the user typed, this is the essence of autocomplete.
-        return elements.filter(function (element) {
-            return element.toLowerCase().indexOf(query.toLowerCase()) !== -1;
-        });
+        if (query.length === 0) {
+            return elements;
+        }
+        else {
+            // Only return the elements that match what the user typed, this is the essence of autocomplete.
+            return elements.filter(function (element) {
+                return element.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+            });
+        }
     };
     return AppDynamicsSDK;
 }());
