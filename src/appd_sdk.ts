@@ -85,6 +85,10 @@ export class AppDynamicsSDK {
                 });
             }).then ( () => {
                 callback();
+            })
+            .catch( (err) => { // If we are here, we were unable to get metrics
+                console.log(err);
+                callback();
             });
     }
 
@@ -160,7 +164,6 @@ export class AppDynamicsSDK {
     }
 
     getFilteredNames(query, arrayResponse) {
-
         let prefix = '';
 
         if (query.indexOf('|') > -1) {
@@ -170,9 +173,15 @@ export class AppDynamicsSDK {
         // Here we are obtaining an array of elements, if they happen to be of type folder, we add a '|' to help the user.
         const elements = arrayResponse.map( (element) =>  prefix + element.name + (element.type === 'folder' ? '|' : '' ));
 
-        // Only return the elements that match what the user typed, this is the essence of autocomplete.
-        return elements.filter( (element) => {
-            return element.toLowerCase().indexOf(query.toLowerCase()) !== -1;
-        });
+        if (query.length === 0) {
+            return elements;
+        }else {
+             // Only return the elements that match what the user typed, this is the essence of autocomplete.
+            return elements.filter( (element) => {
+                return element.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+            });
+
+        }
+
     }
 }
