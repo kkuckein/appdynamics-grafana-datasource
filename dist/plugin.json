@@ -1,6 +1,6 @@
 {
   "name": "AppDynamics",
-  "id": "appdynamics-grafana-datasource",
+  "id": "dlopes7-appdynamics-datasource",
   "type": "datasource",
 
   "metrics": true,
