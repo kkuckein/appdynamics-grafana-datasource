@@ -23,7 +23,6 @@ export class AppDynamicsSDK {
     }
 
     query(options) {
-        console.log(options);
         const startTime = (Math.ceil(dateMath.parse(options.range.from)));
         const endTime = (Math.ceil(dateMath.parse(options.range.to)));
 

@@ -16,7 +16,6 @@ var AppDynamicsSDK = (function () {
     }
     AppDynamicsSDK.prototype.query = function (options) {
         var _this = this;
-        console.log(options);
         var startTime = (Math.ceil(dateMath.parse(options.range.from)));
         var endTime = (Math.ceil(dateMath.parse(options.range.to)));
         var grafanaResponse = { data: [] };
