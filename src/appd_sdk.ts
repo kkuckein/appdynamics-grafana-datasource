@@ -23,6 +23,7 @@ export class AppDynamicsSDK {
     }
 
     query(options) {
+        console.log(options);
         const startTime = (Math.ceil(dateMath.parse(options.range.from)));
         const endTime = (Math.ceil(dateMath.parse(options.range.to)));
 
@@ -31,8 +32,12 @@ export class AppDynamicsSDK {
         // For each one of the metrics the user entered:
         const requests = options.targets.map((target) => {
             return new Promise((resolve) => {
-                this.getMetrics(target, grafanaResponse, startTime, endTime, resolve);
 
+                if (target.hide) { // If the user clicked on the eye icon to hide, don't fetch the metrics.
+                    resolve();
+                } else {
+                    this.getMetrics(target, grafanaResponse, startTime, endTime, resolve);
+                }
             });
         });
 

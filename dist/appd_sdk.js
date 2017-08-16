@@ -16,13 +16,19 @@ var AppDynamicsSDK = (function () {
     }
     AppDynamicsSDK.prototype.query = function (options) {
         var _this = this;
+        console.log(options);
         var startTime = (Math.ceil(dateMath.parse(options.range.from)));
         var endTime = (Math.ceil(dateMath.parse(options.range.to)));
         var grafanaResponse = { data: [] };
         // For each one of the metrics the user entered:
         var requests = options.targets.map(function (target) {
             return new Promise(function (resolve) {
-                _this.getMetrics(target, grafanaResponse, startTime, endTime, resolve);
+                if (target.hide) {
+                    resolve();
+                }
+                else {
+                    _this.getMetrics(target, grafanaResponse, startTime, endTime, resolve);
+                }
             });
         });
         return Promise.all(requests).then(function () {
