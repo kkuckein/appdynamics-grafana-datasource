@@ -1,4 +1,5 @@
 import * as dateMath from 'app/core/utils/datemath';
+import appEvents from 'app/core/app_events';
 
 /*
     This is the class where all AppD logic should reside.
@@ -91,6 +92,14 @@ export class AppDynamicsSDK {
                 callback();
             })
             .catch( (err) => { // If we are here, we were unable to get metrics
+
+                let errMsg = 'Error getting metrics.';
+                if (err.data) {
+                    if (err.data.indexOf('Invalid application name') > -1) {
+                        errMsg = `Invalid application name ${target.application}`;
+                    }
+                }
+                appEvents.emit('alert-error', ['Error', errMsg]);
                 callback();
             });
     }

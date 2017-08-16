@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var dateMath = require("app/core/utils/datemath");
+var app_events_1 = require("app/core/app_events");
 /*
     This is the class where all AppD logic should reside.
     This gets Application Names, Metric Names and queries the API
@@ -75,6 +76,13 @@ var AppDynamicsSDK = (function () {
             callback();
         })
             .catch(function (err) {
+            var errMsg = 'Error getting metrics.';
+            if (err.data) {
+                if (err.data.indexOf('Invalid application name') > -1) {
+                    errMsg = "Invalid application name " + target.application;
+                }
+            }
+            app_events_1.default.emit('alert-error', ['Error', errMsg]);
             callback();
         });
     };
