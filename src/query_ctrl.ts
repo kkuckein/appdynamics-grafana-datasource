@@ -23,12 +23,6 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
         this.target.application = this.target.application || 'Application';
         this.applicationSegment = uiSegmentSrv.newSegment(this.target.application);
 
-        // this.target.metric = this.target.metric || 'Select a metric path';
-        // this.metricSegment = uiSegmentSrv.newSegment(this.target.metric);
-
-        // this.metricPath = ['David'];
-
-        console.log(this.applicationSegment);
 
         this.getApplicationNames = (query) => {
             return this.appD.getApplicationNames(query)
@@ -67,8 +61,6 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
             const segments = results.map( (segment) => {
                 return this.uiSegmentSrv.newSegment({ value: segment });
             });
-
-            console.log(segments);
             return segments;
         };
   }

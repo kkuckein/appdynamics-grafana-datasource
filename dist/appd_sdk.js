@@ -75,7 +75,6 @@ var AppDynamicsSDK = (function () {
             callback();
         })
             .catch(function (err) {
-            console.log(err);
             callback();
         });
     };

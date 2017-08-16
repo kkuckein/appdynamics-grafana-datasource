@@ -91,7 +91,6 @@ export class AppDynamicsSDK {
                 callback();
             })
             .catch( (err) => { // If we are here, we were unable to get metrics
-                console.log(err);
                 callback();
             });
     }

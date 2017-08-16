@@ -22,10 +22,6 @@ var AppDynamicsQueryCtrl = (function (_super) {
         _this.appD = _this.datasource.appD;
         _this.target.application = _this.target.application || 'Application';
         _this.applicationSegment = uiSegmentSrv.newSegment(_this.target.application);
-        // this.target.metric = this.target.metric || 'Select a metric path';
-        // this.metricSegment = uiSegmentSrv.newSegment(this.target.metric);
-        // this.metricPath = ['David'];
-        console.log(_this.applicationSegment);
         _this.getApplicationNames = function (query) {
             return _this.appD.getApplicationNames(query)
                 .then(_this.transformToSegments(false));
@@ -56,7 +52,6 @@ var AppDynamicsQueryCtrl = (function (_super) {
             var segments = results.map(function (segment) {
                 return _this.uiSegmentSrv.newSegment({ value: segment });
             });
-            console.log(segments);
             return segments;
         };
     };
