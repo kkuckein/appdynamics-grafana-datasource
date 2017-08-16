@@ -21,7 +21,7 @@
               spellcheck='false'
               bs-typeahead="ctrl.getMetricNames"
               match-all="true"
-              min-length="1"
+              min-length="0"
               placeholder="MetricPath"
               data-min-length=0 data-items=100
               ng-blur="ctrl.onChangeInternal()">
@@ -45,6 +45,7 @@
               class="gf-form-input"
               ng-model="ctrl.target.transformLegendText"
               spellcheck='false'
+              bs-tooltip="'Specify the segments of the Metric Path that you want to display on legend, ex: 1,3'"
               match-all="true"
               min-length="1"
               data-min-length=0 data-items=100
