@@ -36,24 +36,22 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
             .then(this.transformToSegments(false));
         };
 
-
     }
 
     metricSegmentValueChanged = (metricSegment, segmentIndex) => {
         // Only add a new one if it is the last and it is not a Leaf.
-        if(segmentIndex === this.metricSegments.length - 1 && metricSegment.expandable){
-            this.metricSegments.push(this.uiSegmentSrv.newSelectMetric()); 
+        if ( segmentIndex === this.metricSegments.length - 1 && metricSegment.expandable) {
+            this.metricSegments.push(this.uiSegmentSrv.newSelectMetric());
         }
 
         // If this is a Leaf, we don't need the segments after it.
-        if (segmentIndex < this.metricSegments.length - 1 && ! metricSegment.expandable ){
-            this.metricSegments.length = index + 1;
+        if (segmentIndex < this.metricSegments.length - 1 && ! metricSegment.expandable ) {
+            this.metricSegments.length = segmentIndex + 1;
         }
 
         this.target.metric = this.metricSegments.map( (segment) =>  segment.value).join('|');
         this.panelCtrl.refresh();
-      };
-
+      }
 
     getSegmentPathUpTo(index) {
         const arr = this.metricSegments.slice(0, index);
@@ -80,7 +78,7 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
     transformToSegments(addTemplateVars) {
 
         return (results) => {
-            const segments = results.map( (segment) => {                                
+            const segments = results.map( (segment) => {
                 return this.uiSegmentSrv.newSegment({ value: segment.name, expandable: segment.type === 'folder' });
             });
             return segments;

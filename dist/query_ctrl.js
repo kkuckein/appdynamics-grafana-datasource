@@ -25,7 +25,7 @@ var AppDynamicsQueryCtrl = (function (_super) {
             }
             // If this is a Leaf, we don't need the segments after it.
             if (segmentIndex < _this.metricSegments.length - 1 && !metricSegment.expandable) {
-                _this.metricSegments.length = index + 1;
+                _this.metricSegments.length = segmentIndex + 1;
             }
             _this.target.metric = _this.metricSegments.map(function (segment) { return segment.value; }).join('|');
             _this.panelCtrl.refresh();
