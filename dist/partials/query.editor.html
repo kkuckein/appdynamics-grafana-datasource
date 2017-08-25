@@ -6,7 +6,7 @@
      <div class="gf-form ">
         <label class="gf-form-label width-8">Application</label>
           <metric-segment 
-            class="width-8" 
+            class="width-15" 
             segment="ctrl.applicationSegment" 
             get-options="ctrl.getApplicationNames($query)" 
             on-change="ctrl.appChanged()">
@@ -15,17 +15,9 @@
 
       <div class="gf-form  gf-form--grow">
         <label class="gf-form-label width-8">Metric</label>
-        <input type="text"
-              class="gf-form-input"
-              ng-model="ctrl.target.metric"
-              spellcheck='false'
-              bs-typeahead="ctrl.getMetricNames"
-              match-all="true"
-              min-length="0"
-              placeholder="MetricPath"
-              data-min-length=0 data-items=100
-              ng-blur="ctrl.onChangeInternal()">
-        </input>
+        <div ng-repeat="metricSegment in ctrl.metricSegments" role="menuitem" class="gf-form">
+          <metric-segment segment="metricSegment" get-options="ctrl.getMetricNames($index)" on-change="ctrl.metricSegmentValueChanged(metricSegment, $index)"></metric-segment>
+        </div>
       </div>
 
       <gf-form-switch class="gf-form" label="App on legend" checked="ctrl.target.showAppOnLegend" on-change="ctrl.onChangeInternal()">
