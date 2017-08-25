@@ -10,7 +10,7 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
     transformLegendOptions: object[];
 
     applicationSegment: any;
-    // metricSegment: any;
+    metricSegments: any[];
 
     metricPath: string[];
 
@@ -23,26 +23,49 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
         this.target.application = this.target.application || 'Application';
         this.applicationSegment = uiSegmentSrv.newSegment(this.target.application);
 
+        // TODO - When copying, how to maintain the metrics?
+        this.metricSegments = [this.uiSegmentSrv.newSelectMetric()];
 
         this.getApplicationNames = (query) => {
             return this.appD.getApplicationNames(query)
             .then(this.transformToSegments(false));
         };
 
-        this.getMetricNames = (query, callback) => {
-            this.appD.getMetricNames(this.target.application, query)
-            .then(callback);
+        this.getMetricNames = (index) => {
+            return this.appD.getMetricNames(this.target.application, this.getSegmentPathUpTo(index))
+            .then(this.transformToSegments(false));
         };
 
+
     }
+
+    metricSegmentValueChanged = (metricSegment, segmentIndex) => {
+        // Only add a new one if it is the last and it is not a Leaf.
+        if(segmentIndex === this.metricSegments.length - 1 && metricSegment.expandable){
+            this.metricSegments.push(this.uiSegmentSrv.newSelectMetric()); 
+        }
+
+        // If this is a Leaf, we don't need the segments after it.
+        if (segmentIndex < this.metricSegments.length - 1 && ! metricSegment.expandable ){
+            this.metricSegments.length = index + 1;
+        }
+
+        this.target.metric = this.metricSegments.map( (segment) =>  segment.value).join('|');
+        this.panelCtrl.refresh();
+      };
+
+
+    getSegmentPathUpTo(index) {
+        const arr = this.metricSegments.slice(0, index);
+        let segments = '';
+        for (let i = 0; i < arr.length; i++) {
+          segments += arr[i].value + '|';
+        }
+        return segments;
+      }
 
     appChanged() {
         this.target.application = this.applicationSegment.value;
-        this.panelCtrl.refresh();
-    }
-
-    metricChanged() {
-        this.target.metric = this.metricSegment.value;
         this.panelCtrl.refresh();
     }
 
@@ -57,9 +80,8 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
     transformToSegments(addTemplateVars) {
 
         return (results) => {
-
-            const segments = results.map( (segment) => {
-                return this.uiSegmentSrv.newSegment({ value: segment });
+            const segments = results.map( (segment) => {                                
+                return this.uiSegmentSrv.newSegment({ value: segment.name, expandable: segment.type === 'folder' });
             });
             return segments;
         };

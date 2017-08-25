@@ -179,18 +179,17 @@ export class AppDynamicsSDK {
         let prefix = '';
 
         if (query.indexOf('|') > -1) {
-            prefix = query.slice(0, query.lastIndexOf('|') + 1);
+            let queryPieces = query.split('|');
+            query = queryPieces[queryPieces.length - 1];
         }
 
-        // Here we are obtaining an array of elements, if they happen to be of type folder, we add a '|' to help the user.
-        const elements = arrayResponse.map( (element) =>  prefix + element.name + (element.type === 'folder' ? '|' : '' ));
-
         if (query.length === 0) {
-            return elements;
+            return arrayResponse;
+
         }else {
              // Only return the elements that match what the user typed, this is the essence of autocomplete.
-            return elements.filter( (element) => {
-                return element.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+            return arrayResponse.filter( (element) => {
+                return query.toLowerCase().indexOf(element.name.toLowerCase()) !== -1 || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1 ;
             });
 
         }
