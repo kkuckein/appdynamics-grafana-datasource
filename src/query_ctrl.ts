@@ -39,6 +39,12 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
     }
 
     metricSegmentValueChanged = (metricSegment, segmentIndex) => {
+
+        // If the user is editing a Folder segment, we delete the ones after it. Unless the user typed a '*'
+        if ( segmentIndex < this.metricSegments.length - 1 && metricSegment.value !== '*') {
+            this.metricSegments.length = segmentIndex + 1;
+        }
+
         // Only add a new one if it is the last and it is not a Leaf.
         if ( segmentIndex === this.metricSegments.length - 1 && metricSegment.expandable) {
             this.metricSegments.push(this.uiSegmentSrv.newSelectMetric());

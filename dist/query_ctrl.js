@@ -19,6 +19,10 @@ var AppDynamicsQueryCtrl = (function (_super) {
         _this.uiSegmentSrv = uiSegmentSrv;
         _this.templateSrv = templateSrv;
         _this.metricSegmentValueChanged = function (metricSegment, segmentIndex) {
+            // If the user is editing a Folder segment, we delete the ones after it. Unless the user typed a '*'
+            if (segmentIndex < _this.metricSegments.length - 1 && metricSegment.value !== '*') {
+                _this.metricSegments.length = segmentIndex + 1;
+            }
             // Only add a new one if it is the last and it is not a Leaf.
             if (segmentIndex === _this.metricSegments.length - 1 && metricSegment.expandable) {
                 _this.metricSegments.push(_this.uiSegmentSrv.newSelectMetric());
