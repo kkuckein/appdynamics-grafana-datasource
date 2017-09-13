@@ -20,11 +20,9 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
         this.uiSegmentSrv = uiSegmentSrv;
         this.appD = this.datasource.appD;
 
-        this.target.application = this.target.application || 'Application';
-        this.applicationSegment = uiSegmentSrv.newSegment(this.target.application);
-
-        // TODO - When copying, how to maintain the metrics?
-        this.metricSegments = [this.uiSegmentSrv.newSelectMetric()];
+        if (this.target) {
+            this.parseTarget();
+        }
 
         this.getApplicationNames = (query) => {
             return this.appD.getApplicationNames(query)
@@ -35,6 +33,30 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
             return this.appD.getMetricNames(this.target.application, this.getSegmentPathUpTo(index))
             .then(this.transformToSegments(false));
         };
+
+        console.log(this);
+
+    }
+
+    parseTarget() {
+
+        this.metricSegments = [];
+
+        this.applicationSegment = this.uiSegmentSrv.newSegment(this.target.application || 'Application');
+
+        if (this.target.metric) {
+            this.target.metric.split('|').forEach( (element, index, arr) => {
+                let expandable = true;
+                if (index === arr.length - 1) {
+                    expandable = false;
+                }
+                const newSegment = this.uiSegmentSrv.newSegment({ value: element, expandable });
+                this.metricSegments.push(newSegment);
+            });
+
+        }else {
+            this.metricSegments = [this.uiSegmentSrv.newSelectMetric()];
+        }
 
     }
 
@@ -62,9 +84,11 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
     getSegmentPathUpTo(index) {
         const arr = this.metricSegments.slice(0, index);
         let segments = '';
-        for (let i = 0; i < arr.length; i++) {
-          segments += arr[i].value + '|';
-        }
+
+        arr.forEach( (element) => {
+            segments += element.value + '|';
+        });
+
         return segments;
       }
 

@@ -36,10 +36,9 @@ var AppDynamicsQueryCtrl = (function (_super) {
         };
         _this.uiSegmentSrv = uiSegmentSrv;
         _this.appD = _this.datasource.appD;
-        _this.target.application = _this.target.application || 'Application';
-        _this.applicationSegment = uiSegmentSrv.newSegment(_this.target.application);
-        // TODO - When copying, how to maintain the metrics?
-        _this.metricSegments = [_this.uiSegmentSrv.newSelectMetric()];
+        if (_this.target) {
+            _this.parseTarget();
+        }
         _this.getApplicationNames = function (query) {
             return _this.appD.getApplicationNames(query)
                 .then(_this.transformToSegments(false));
@@ -48,14 +47,33 @@ var AppDynamicsQueryCtrl = (function (_super) {
             return _this.appD.getMetricNames(_this.target.application, _this.getSegmentPathUpTo(index))
                 .then(_this.transformToSegments(false));
         };
+        console.log(_this);
         return _this;
     }
+    AppDynamicsQueryCtrl.prototype.parseTarget = function () {
+        var _this = this;
+        this.metricSegments = [];
+        this.applicationSegment = this.uiSegmentSrv.newSegment(this.target.application || 'Application');
+        if (this.target.metric) {
+            this.target.metric.split('|').forEach(function (element, index, arr) {
+                var expandable = true;
+                if (index === arr.length - 1) {
+                    expandable = false;
+                }
+                var newSegment = _this.uiSegmentSrv.newSegment({ value: element, expandable: expandable });
+                _this.metricSegments.push(newSegment);
+            });
+        }
+        else {
+            this.metricSegments = [this.uiSegmentSrv.newSelectMetric()];
+        }
+    };
     AppDynamicsQueryCtrl.prototype.getSegmentPathUpTo = function (index) {
         var arr = this.metricSegments.slice(0, index);
         var segments = '';
-        for (var i = 0; i < arr.length; i++) {
-            segments += arr[i].value + '|';
-        }
+        arr.forEach(function (element) {
+            segments += element.value + '|';
+        });
         return segments;
     };
     AppDynamicsQueryCtrl.prototype.appChanged = function () {
