@@ -4,34 +4,37 @@
   <div class="gf-form-inline">
 
      <div class="gf-form ">
-        <label class="gf-form-label width-8">Application</label>
+        <label class="gf-form-label query-keyword width-8">Application</label>
           <metric-segment 
             class="width-15" 
             segment="ctrl.applicationSegment" 
             get-options="ctrl.getApplicationNames($query)" 
             on-change="ctrl.appChanged()">
           </metric-segment>
-      </div>
+    </div>
 
-      <div class="gf-form  gf-form--grow">
-        <label class="gf-form-label width-8">Metric</label>
-        <div ng-repeat="metricSegment in ctrl.metricSegments" role="menuitem" class="gf-form">
+      <div class="gf-form gf-form--grow">
+        <label class="gf-form-label query-keyword width-8 ">Metric</label>
+        <div class="gf-form--grow" ng-repeat="metricSegment in ctrl.metricSegments" role="menuitem" class="gf-form">
           <metric-segment segment="metricSegment" get-options="ctrl.getMetricNames($index)" on-change="ctrl.metricSegmentValueChanged(metricSegment, $index)"></metric-segment>
         </div>
       </div>
 
-      <gf-form-switch class="gf-form" label="App on legend" checked="ctrl.target.showAppOnLegend" on-change="ctrl.onChangeInternal()">
+      <gf-form-switch class="gf-form query-keyword" label="App on legend" checked="ctrl.target.showAppOnLegend" on-change="ctrl.onChangeInternal()">
     </gf-form-switch>
 
+    <div class="gf-form">
       <div class="gf-form-select-wrapper">
-        <select class="gf-form-input"
+        <select class="gf-form-input query-keyword"
               ng-model="ctrl.target.transformLegend"
               ng-init="ctrl.target.transformLegend = ctrl.target.transformLegend || 'Full Path'"
               ng-options="t for t in ['Full Path', 'Segments']"
               ng-change="ctrl.onChangeInternal()">
         </select>
       </div>
+    </div>
 
+    <div class="gf-form">
       <div class="gf-form" ng-if="ctrl.target.transformLegend != 'Full Path'">
         <input type="text"
               class="gf-form-input"
@@ -44,6 +47,7 @@
               ng-blur="ctrl.onChangeInternal()">
         </input>
       </div>
+   </div>
 
 </div>
 
