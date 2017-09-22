@@ -36,7 +36,7 @@ export class AppDynamicsSDK {
                 if (target.hide) { // If the user clicked on the eye icon to hide, don't fetch the metrics.
                     resolve();
                 } else {
-                    this.getMetrics(target, grafanaResponse, startTime, endTime, resolve);
+                    this.getMetrics(target, grafanaResponse, startTime, endTime, options, resolve);
                 }
             });
         });
@@ -47,10 +47,12 @@ export class AppDynamicsSDK {
 
     }
 
-    getMetrics(target, grafanaResponse, startTime, endTime, callback) {
+    getMetrics(target, grafanaResponse, startTime, endTime, options, callback) {
 
-        const templatedApp = this.templateSrv.replace(target.application);
-        const templatedMetric = this.templateSrv.replace(target.metric);
+        const templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
+        const templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
+
+        console.log(options);
 
         return this.backendSrv.datasourceRequest({
                 url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
@@ -68,10 +70,11 @@ export class AppDynamicsSDK {
 
                 // A single metric can have multiple results if the user chose to use a wildcard
                 // Iterates on every result.
+
                 response.data.forEach( (metricElement) => {
 
                     const pathSplit = metricElement.metricPath.split('|');
-                    let legend = target.showAppOnLegend ? target.application + ' - ' : '' ;
+                    let legend = target.showAppOnLegend ? templatedApp + ' - ' : '' ;
 
                     // Legend options
                     switch (target.transformLegend) {
@@ -100,7 +103,7 @@ export class AppDynamicsSDK {
                 let errMsg = 'Error getting metrics.';
                 if (err.data) {
                     if (err.data.indexOf('Invalid application name') > -1) {
-                        errMsg = `Invalid application name ${target.application}`;
+                        errMsg = `Invalid application name ${templatedApp}`;
                     }
                 }
                 appEvents.emit('alert-error', ['Error', errMsg]);

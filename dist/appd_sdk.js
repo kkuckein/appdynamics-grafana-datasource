@@ -28,7 +28,7 @@ var AppDynamicsSDK = (function () {
                     resolve();
                 }
                 else {
-                    _this.getMetrics(target, grafanaResponse, startTime, endTime, resolve);
+                    _this.getMetrics(target, grafanaResponse, startTime, endTime, options, resolve);
                 }
             });
         });
@@ -36,10 +36,11 @@ var AppDynamicsSDK = (function () {
             return grafanaResponse;
         });
     };
-    AppDynamicsSDK.prototype.getMetrics = function (target, grafanaResponse, startTime, endTime, callback) {
+    AppDynamicsSDK.prototype.getMetrics = function (target, grafanaResponse, startTime, endTime, options, callback) {
         var _this = this;
-        var templatedApp = this.templateSrv.replace(target.application);
-        var templatedMetric = this.templateSrv.replace(target.metric);
+        var templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
+        var templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
+        console.log(options);
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
             method: 'GET',
@@ -57,7 +58,7 @@ var AppDynamicsSDK = (function () {
             // Iterates on every result.
             response.data.forEach(function (metricElement) {
                 var pathSplit = metricElement.metricPath.split('|');
-                var legend = target.showAppOnLegend ? target.application + ' - ' : '';
+                var legend = target.showAppOnLegend ? templatedApp + ' - ' : '';
                 // Legend options
                 switch (target.transformLegend) {
                     case 'Segments':// TODO: Maybe a Regex option as well
@@ -82,7 +83,7 @@ var AppDynamicsSDK = (function () {
             var errMsg = 'Error getting metrics.';
             if (err.data) {
                 if (err.data.indexOf('Invalid application name') > -1) {
-                    errMsg = "Invalid application name " + target.application;
+                    errMsg = "Invalid application name " + templatedApp;
                 }
             }
             app_events_1.default.emit('alert-error', ['Error', errMsg]);
