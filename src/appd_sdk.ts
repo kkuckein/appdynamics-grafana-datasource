@@ -13,7 +13,7 @@ export class AppDynamicsSDK {
     tenant: string;
     url: string;
 
-    constructor(instanceSettings, private backendSrv) {
+    constructor(instanceSettings, private backendSrv, private templateSrv) {
 
         // Controller settings
         this.username = instanceSettings.username;
@@ -48,11 +48,15 @@ export class AppDynamicsSDK {
     }
 
     getMetrics(target, grafanaResponse, startTime, endTime, callback) {
+
+        const templatedApp = this.templateSrv.replace(target.application);
+        const templatedMetric = this.templateSrv.replace(target.metric);
+
         return this.backendSrv.datasourceRequest({
-                url: this.url + '/controller/rest/applications/' + target.application + '/metric-data',
+                url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
                 method: 'GET',
                 params: {
-                            'metric-path': target.metric,
+                            'metric-path': templatedMetric,
                             'time-range-type': 'BETWEEN_TIMES',
                             'start-time': startTime,
                             'end-time': endTime,
@@ -135,13 +139,14 @@ export class AppDynamicsSDK {
     }
 
     getApplicationNames(query) {
+        const templatedQuery = this.templateSrv.replace(query);
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications',
             method: 'GET',
             params: { output: 'json'}
             }).then( (response) => {
                 if (response.status === 200) {
-                    return this.getFilteredNames(query, response.data);
+                    return this.getFilteredNames(templatedQuery, response.data);
                 }else {
                     return [];
                 }
@@ -152,19 +157,20 @@ export class AppDynamicsSDK {
     }
 
     getMetricNames(app, query) {
-
+        const templatedApp = this.templateSrv.replace(app);
+        const templatedQuery = this.templateSrv.replace(query);
         const params = { output: 'json'};
         if (query.indexOf('|') > -1) {
             params['metric-path'] = query;
         }
 
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/controller/rest/applications/' + app +  '/metrics',
+            url: this.url + '/controller/rest/applications/' + templatedApp +  '/metrics',
             method: 'GET',
             params
             }).then( (response) => {
                 if (response.status === 200) {
-                    return this.getFilteredNames(query, response.data);
+                    return this.getFilteredNames(templatedQuery, response.data);
                 }else {
                     return [];
                 }
@@ -176,10 +182,8 @@ export class AppDynamicsSDK {
     }
 
     getFilteredNames(query, arrayResponse) {
-        let prefix = '';
-
         if (query.indexOf('|') > -1) {
-            let queryPieces = query.split('|');
+            const queryPieces = query.split('|');
             query = queryPieces[queryPieces.length - 1];
         }
 
@@ -189,10 +193,9 @@ export class AppDynamicsSDK {
         }else {
              // Only return the elements that match what the user typed, this is the essence of autocomplete.
             return arrayResponse.filter( (element) => {
-                return query.toLowerCase().indexOf(element.name.toLowerCase()) !== -1 || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1 ;
+                return query.toLowerCase().indexOf(element.name.toLowerCase()) !== -1
+                || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1 ;
             });
-
         }
-
     }
 }

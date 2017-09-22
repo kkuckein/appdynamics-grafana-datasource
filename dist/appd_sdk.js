@@ -7,8 +7,9 @@ var app_events_1 = require("app/core/app_events");
     This gets Application Names, Metric Names and queries the API
 */
 var AppDynamicsSDK = (function () {
-    function AppDynamicsSDK(instanceSettings, backendSrv) {
+    function AppDynamicsSDK(instanceSettings, backendSrv, templateSrv) {
         this.backendSrv = backendSrv;
+        this.templateSrv = templateSrv;
         // Controller settings
         this.username = instanceSettings.username;
         this.password = instanceSettings.password;
@@ -37,11 +38,13 @@ var AppDynamicsSDK = (function () {
     };
     AppDynamicsSDK.prototype.getMetrics = function (target, grafanaResponse, startTime, endTime, callback) {
         var _this = this;
+        var templatedApp = this.templateSrv.replace(target.application);
+        var templatedMetric = this.templateSrv.replace(target.metric);
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/controller/rest/applications/' + target.application + '/metric-data',
+            url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
             method: 'GET',
             params: {
-                'metric-path': target.metric,
+                'metric-path': templatedMetric,
                 'time-range-type': 'BETWEEN_TIMES',
                 'start-time': startTime,
                 'end-time': endTime,
@@ -114,13 +117,14 @@ var AppDynamicsSDK = (function () {
     };
     AppDynamicsSDK.prototype.getApplicationNames = function (query) {
         var _this = this;
+        var templatedQuery = this.templateSrv.replace(query);
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications',
             method: 'GET',
             params: { output: 'json' }
         }).then(function (response) {
             if (response.status === 200) {
-                return _this.getFilteredNames(query, response.data);
+                return _this.getFilteredNames(templatedQuery, response.data);
             }
             else {
                 return [];
@@ -131,17 +135,19 @@ var AppDynamicsSDK = (function () {
     };
     AppDynamicsSDK.prototype.getMetricNames = function (app, query) {
         var _this = this;
+        var templatedApp = this.templateSrv.replace(app);
+        var templatedQuery = this.templateSrv.replace(query);
         var params = { output: 'json' };
         if (query.indexOf('|') > -1) {
             params['metric-path'] = query;
         }
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/controller/rest/applications/' + app + '/metrics',
+            url: this.url + '/controller/rest/applications/' + templatedApp + '/metrics',
             method: 'GET',
             params: params
         }).then(function (response) {
             if (response.status === 200) {
-                return _this.getFilteredNames(query, response.data);
+                return _this.getFilteredNames(templatedQuery, response.data);
             }
             else {
                 return [];
@@ -151,7 +157,6 @@ var AppDynamicsSDK = (function () {
         });
     };
     AppDynamicsSDK.prototype.getFilteredNames = function (query, arrayResponse) {
-        var prefix = '';
         if (query.indexOf('|') > -1) {
             var queryPieces = query.split('|');
             query = queryPieces[queryPieces.length - 1];
@@ -162,7 +167,8 @@ var AppDynamicsSDK = (function () {
         else {
             // Only return the elements that match what the user typed, this is the essence of autocomplete.
             return arrayResponse.filter(function (element) {
-                return query.toLowerCase().indexOf(element.name.toLowerCase()) !== -1 || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+                return query.toLowerCase().indexOf(element.name.toLowerCase()) !== -1
+                    || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
             });
         }
     };

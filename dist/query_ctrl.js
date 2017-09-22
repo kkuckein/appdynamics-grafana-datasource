@@ -47,7 +47,6 @@ var AppDynamicsQueryCtrl = (function (_super) {
             return _this.appD.getMetricNames(_this.target.application, _this.getSegmentPathUpTo(index))
                 .then(_this.transformToSegments(false));
         };
-        console.log(_this);
         return _this;
     }
     AppDynamicsQueryCtrl.prototype.parseTarget = function () {

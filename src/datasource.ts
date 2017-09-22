@@ -6,7 +6,7 @@ export class AppDynamicsDatasource {
 
     constructor(instanceSettings, private $q, private backendSrv, private templateSrv) {
 
-        this.appD = new AppDynamicsSDK(instanceSettings, backendSrv);
+        this.appD = new AppDynamicsSDK(instanceSettings, backendSrv, templateSrv);
         this.templateSrv = templateSrv;
 
     }
@@ -23,10 +23,11 @@ export class AppDynamicsDatasource {
         // TODO implement annotationQuery
     }
 
-    getApplicationNames(query) {
-        const interpolated = {
-            target: this.templateSrv.replace(query, null, 'regex')
-        };
-        return this.appD.getApplicationNames(query);
+    metricFindQuery(query) {
+        return this.appD.getApplicationNames('').then( (results) => {
+            return results.map( (result) => {
+                return {text: result.name};
+            });
+        });
     }
 }

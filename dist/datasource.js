@@ -6,7 +6,7 @@ var AppDynamicsDatasource = (function () {
         this.$q = $q;
         this.backendSrv = backendSrv;
         this.templateSrv = templateSrv;
-        this.appD = new appd_sdk_1.AppDynamicsSDK(instanceSettings, backendSrv);
+        this.appD = new appd_sdk_1.AppDynamicsSDK(instanceSettings, backendSrv, templateSrv);
         this.templateSrv = templateSrv;
     }
     AppDynamicsDatasource.prototype.query = function (options) {
@@ -18,11 +18,12 @@ var AppDynamicsDatasource = (function () {
     AppDynamicsDatasource.prototype.annotationQuery = function () {
         // TODO implement annotationQuery
     };
-    AppDynamicsDatasource.prototype.getApplicationNames = function (query) {
-        var interpolated = {
-            target: this.templateSrv.replace(query, null, 'regex')
-        };
-        return this.appD.getApplicationNames(query);
+    AppDynamicsDatasource.prototype.metricFindQuery = function (query) {
+        return this.appD.getApplicationNames('').then(function (results) {
+            return results.map(function (result) {
+                return { text: result.name };
+            });
+        });
     };
     return AppDynamicsDatasource;
 }());

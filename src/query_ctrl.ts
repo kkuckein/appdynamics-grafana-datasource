@@ -34,8 +34,6 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
             .then(this.transformToSegments(false));
         };
 
-        console.log(this);
-
     }
 
     parseTarget() {
