@@ -6,7 +6,7 @@ var app_events_1 = require("app/core/app_events");
     This is the class where all AppD logic should reside.
     This gets Application Names, Metric Names and queries the API
 */
-var AppDynamicsSDK = (function () {
+var AppDynamicsSDK = /** @class */ (function () {
     function AppDynamicsSDK(instanceSettings, backendSrv, templateSrv) {
         this.backendSrv = backendSrv;
         this.templateSrv = templateSrv;
@@ -73,8 +73,10 @@ var AppDynamicsSDK = (function () {
                     default:
                         legend += metricElement.metricPath;
                 }
-                grafanaResponse.data.push({ target: legend,
-                    datapoints: _this.convertMetricData(metricElement, callback) });
+                grafanaResponse.data.push({
+                    target: legend,
+                    datapoints: _this.convertMetricData(metricElement, callback)
+                });
             });
         }).then(function () {
             callback();
@@ -140,7 +142,7 @@ var AppDynamicsSDK = (function () {
         var templatedQuery = this.templateSrv.replace(query);
         var params = { output: 'json' };
         if (query.indexOf('|') > -1) {
-            params['metric-path'] = query;
+            params['metric-path'] = templatedQuery;
         }
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications/' + templatedApp + '/metrics',
