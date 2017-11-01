@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var appd_sdk_1 = require("./appd_sdk");
-var AppDynamicsDatasource = /** @class */ (function () {
+var AppDynamicsDatasource = (function () {
     function AppDynamicsDatasource(instanceSettings, $q, backendSrv, templateSrv) {
         this.$q = $q;
         this.backendSrv = backendSrv;
@@ -19,7 +19,7 @@ var AppDynamicsDatasource = /** @class */ (function () {
         // TODO implement annotationQuery
     };
     AppDynamicsDatasource.prototype.metricFindQuery = function (query) {
-        return this.appD.getApplicationNames('').then(function (results) {
+        return this.appD.getTemplateNames(query).then(function (results) {
             return results.map(function (result) {
                 return { text: result.name };
             });

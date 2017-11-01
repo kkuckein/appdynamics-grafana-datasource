@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var sdk_1 = require("app/plugins/sdk");
-var AppDynamicsQueryCtrl = /** @class */ (function (_super) {
+var AppDynamicsQueryCtrl = (function (_super) {
     __extends(AppDynamicsQueryCtrl, _super);
     function AppDynamicsQueryCtrl($scope, $injector, $q, uiSegmentSrv, templateSrv) {
         var _this = _super.call(this, $scope, $injector) || this;

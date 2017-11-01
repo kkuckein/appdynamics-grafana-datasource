@@ -1,5 +1,6 @@
 import * as dateMath from 'app/core/utils/datemath';
 import appEvents from 'app/core/app_events';
+import * as utils from './utils';
 
 /*
     This is the class where all AppD logic should reside.
@@ -143,6 +144,89 @@ export class AppDynamicsSDK {
         // TODO implement annotationQuery
     }
 
+    getBusinessTransactionNames(appName) {
+        return this.backendSrv.datasourceRequest({
+            url: this.url + '/controller/rest/applications/' + appName + '/business-transactions',
+            method: 'GET',
+            params: { output: 'json' }
+        }).then((response) => {
+            if (response.status === 200) {
+                return this.getFilteredNames('', response.data);
+            } else {
+                return [];
+            }
+
+        }).catch((error) => {
+            return [];
+        });
+    }
+
+    getTierNames(appName) {
+        return this.backendSrv.datasourceRequest({
+            url: this.url + '/controller/rest/applications/' + appName + '/tiers',
+            method: 'GET',
+            params: { output: 'json' }
+        }).then((response) => {
+            if (response.status === 200) {
+                return this.getFilteredNames('', response.data);
+            } else {
+                return [];
+            }
+
+        }).catch((error) => {
+            return [];
+        });
+    }
+
+    getNodeNames(appName) {
+        return this.backendSrv.datasourceRequest({
+            url: this.url + '/controller/rest/applications/' + appName + '/nodes',
+            method: 'GET',
+            params: { output: 'json' }
+        }).then((response) => {
+            if (response.status === 200) {
+                return this.getFilteredNames('', response.data);
+            } else {
+                return [];
+            }
+
+        }).catch((error) => {
+            return [];
+        });
+    }
+
+    getTemplateNames(query) {
+        const possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes'];
+        const templatedQuery = this.templateSrv.replace(query);
+
+        if (templatedQuery.indexOf('.') > -1) {
+            const appName = templatedQuery.split('.')[0];
+            const type = templatedQuery.split('.')[1];
+
+            if (possibleQueries.indexOf(type) === -1) {
+                appEvents.emit('alert-error',
+                    ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Nodes']);
+            } else {
+                switch (type) {
+                    case 'BusinessTransactions':
+                        return this.getBusinessTransactionNames(appName);
+                    case 'Tiers':
+                        return this.getTierNames(appName);
+                    case 'Nodes':
+                        return this.getNodeNames(appName);
+                    default:
+                        appEvents.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, Tiers or Nodes"]);
+
+                }
+            }
+
+        } else {
+            console.log('Getting Applications');
+            return this.getApplicationNames('');
+        }
+
+    }
+
     getApplicationNames(query) {
         const templatedQuery = this.templateSrv.replace(query);
         return this.backendSrv.datasourceRequest({
@@ -163,7 +247,9 @@ export class AppDynamicsSDK {
 
     getMetricNames(app, query) {
         const templatedApp = this.templateSrv.replace(app);
-        const templatedQuery = this.templateSrv.replace(query);
+        let templatedQuery = this.templateSrv.replace(query);
+        templatedQuery = utils.getFirstTemplated(templatedQuery);
+
         const params = { output: 'json' };
         if (query.indexOf('|') > -1) {
             params['metric-path'] = templatedQuery;

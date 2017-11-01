@@ -2,11 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var dateMath = require("app/core/utils/datemath");
 var app_events_1 = require("app/core/app_events");
+var utils = require("./utils");
 /*
     This is the class where all AppD logic should reside.
     This gets Application Names, Metric Names and queries the API
 */
-var AppDynamicsSDK = /** @class */ (function () {
+var AppDynamicsSDK = (function () {
     function AppDynamicsSDK(instanceSettings, backendSrv, templateSrv) {
         this.backendSrv = backendSrv;
         this.templateSrv = templateSrv;
@@ -118,6 +119,84 @@ var AppDynamicsSDK = /** @class */ (function () {
     AppDynamicsSDK.prototype.annotationQuery = function () {
         // TODO implement annotationQuery
     };
+    AppDynamicsSDK.prototype.getBusinessTransactionNames = function (appName) {
+        var _this = this;
+        return this.backendSrv.datasourceRequest({
+            url: this.url + '/controller/rest/applications/' + appName + '/business-transactions',
+            method: 'GET',
+            params: { output: 'json' }
+        }).then(function (response) {
+            if (response.status === 200) {
+                return _this.getFilteredNames('', response.data);
+            }
+            else {
+                return [];
+            }
+        }).catch(function (error) {
+            return [];
+        });
+    };
+    AppDynamicsSDK.prototype.getTierNames = function (appName) {
+        var _this = this;
+        return this.backendSrv.datasourceRequest({
+            url: this.url + '/controller/rest/applications/' + appName + '/tiers',
+            method: 'GET',
+            params: { output: 'json' }
+        }).then(function (response) {
+            if (response.status === 200) {
+                return _this.getFilteredNames('', response.data);
+            }
+            else {
+                return [];
+            }
+        }).catch(function (error) {
+            return [];
+        });
+    };
+    AppDynamicsSDK.prototype.getNodeNames = function (appName) {
+        var _this = this;
+        return this.backendSrv.datasourceRequest({
+            url: this.url + '/controller/rest/applications/' + appName + '/nodes',
+            method: 'GET',
+            params: { output: 'json' }
+        }).then(function (response) {
+            if (response.status === 200) {
+                return _this.getFilteredNames('', response.data);
+            }
+            else {
+                return [];
+            }
+        }).catch(function (error) {
+            return [];
+        });
+    };
+    AppDynamicsSDK.prototype.getTemplateNames = function (query) {
+        var possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes'];
+        var templatedQuery = this.templateSrv.replace(query);
+        if (templatedQuery.indexOf('.') > -1) {
+            var appName = templatedQuery.split('.')[0];
+            var type = templatedQuery.split('.')[1];
+            if (possibleQueries.indexOf(type) === -1) {
+                app_events_1.default.emit('alert-error', ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Nodes']);
+            }
+            else {
+                switch (type) {
+                    case 'BusinessTransactions':
+                        return this.getBusinessTransactionNames(appName);
+                    case 'Tiers':
+                        return this.getTierNames(appName);
+                    case 'Nodes':
+                        return this.getNodeNames(appName);
+                    default:
+                        app_events_1.default.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, Tiers or Nodes"]);
+                }
+            }
+        }
+        else {
+            console.log('Getting Applications');
+            return this.getApplicationNames('');
+        }
+    };
     AppDynamicsSDK.prototype.getApplicationNames = function (query) {
         var _this = this;
         var templatedQuery = this.templateSrv.replace(query);
@@ -140,6 +219,7 @@ var AppDynamicsSDK = /** @class */ (function () {
         var _this = this;
         var templatedApp = this.templateSrv.replace(app);
         var templatedQuery = this.templateSrv.replace(query);
+        templatedQuery = utils.getFirstTemplated(templatedQuery);
         var params = { output: 'json' };
         if (query.indexOf('|') > -1) {
             params['metric-path'] = templatedQuery;
