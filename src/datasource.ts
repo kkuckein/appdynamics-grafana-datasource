@@ -1,4 +1,5 @@
-import {AppDynamicsSDK} from './appd_sdk';
+import { AppDynamicsSDK } from './appd_sdk';
+import appEvents from 'app/core/app_events';
 
 export class AppDynamicsDatasource {
 
@@ -13,7 +14,7 @@ export class AppDynamicsDatasource {
 
     query(options) {
         return this.appD.query(options);
-  }
+    }
 
     testDatasource() {
         return this.appD.testDatasource();
@@ -24,9 +25,10 @@ export class AppDynamicsDatasource {
     }
 
     metricFindQuery(query) {
-        return this.appD.getApplicationNames('').then( (results) => {
-            return results.map( (result) => {
-                return {text: result.name};
+
+        return this.appD.getTemplateNames(query).then((results) => {
+            return results.map((result) => {
+                return { text: result.name };
             });
         });
     }

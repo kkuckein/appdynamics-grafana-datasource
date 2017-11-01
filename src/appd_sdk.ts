@@ -1,5 +1,6 @@
 import * as dateMath from 'app/core/utils/datemath';
 import appEvents from 'app/core/app_events';
+import * as utils from './utils';
 
 /*
     This is the class where all AppD logic should reside.
@@ -36,7 +37,20 @@ export class AppDynamicsSDK {
                 if (target.hide) { // If the user clicked on the eye icon to hide, don't fetch the metrics.
                     resolve();
                 } else {
-                    this.getMetrics(target, grafanaResponse, startTime, endTime, options, resolve);
+                    const templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
+                    const templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
+
+                    // We need to also account for every combination of templated metric
+                    const allQueries = utils.resolveMetricQueries(templatedMetric);
+                    const everyRequest = allQueries.map((query) => {
+                        return new Promise((innerResolve) => {
+                            this.getMetrics(templatedApp, query, target, grafanaResponse, startTime, endTime, options, innerResolve);
+                        });
+                    });
+
+                    return Promise.all(everyRequest).then(() => {
+                        resolve();
+                    });
                 }
             });
         });
@@ -47,13 +61,8 @@ export class AppDynamicsSDK {
 
     }
 
-    getMetrics(target, grafanaResponse, startTime, endTime, options, callback) {
-
-        const templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
-        const templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
-
-        console.log(options);
-
+    getMetrics(templatedApp, templatedMetric, target, grafanaResponse, startTime, endTime, options, callback) {
+        //console.log(`Getting metric: App = ${templatedApp} Metric = ${templatedMetric}`);
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
             method: 'GET',
@@ -94,27 +103,26 @@ export class AppDynamicsSDK {
 
                 grafanaResponse.data.push({
                     target: legend,
-                    datapoints: this.convertMetricData(metricElement, callback)
+                    datapoints: this.convertMetricData(metricElement)
                 });
             });
         }).then(() => {
             callback();
-        })
-            .catch((err) => { // If we are here, we were unable to get metrics
+        }).catch((err) => { // If we are here, we were unable to get metrics
 
-                let errMsg = 'Error getting metrics.';
-                if (err.data) {
-                    if (err.data.indexOf('Invalid application name') > -1) {
-                        errMsg = `Invalid application name ${templatedApp}`;
-                    }
+            let errMsg = 'Error getting metrics.';
+            if (err.data) {
+                if (err.data.indexOf('Invalid application name') > -1) {
+                    errMsg = `Invalid application name ${templatedApp}`;
                 }
-                appEvents.emit('alert-error', ['Error', errMsg]);
-                callback();
-            });
+            }
+            appEvents.emit('alert-error', ['Error', errMsg]);
+            callback();
+        });
     }
 
     // This helper method just converts the AppD response to the Grafana format
-    convertMetricData(metricElement, resolve) {
+    convertMetricData(metricElement) {
         const responseArray = [];
 
         metricElement.metricValues.forEach((metricValue) => {
@@ -143,6 +151,109 @@ export class AppDynamicsSDK {
         // TODO implement annotationQuery
     }
 
+    getBusinessTransactionNames(appName, tierName) {
+        const url = this.url + '/controller/rest/applications/' + appName + '/business-transactions';
+        return this.backendSrv.datasourceRequest({
+            url,
+            method: 'GET',
+            params: { output: 'json' }
+        }).then((response) => {
+            if (response.status === 200) {
+                if (tierName) {
+                    return this.getBTsInTier(tierName, response.data);
+                } else {
+                    return this.getFilteredNames('', response.data);
+                }
+            } else {
+                return [];
+            }
+
+        }).catch((error) => {
+            return [];
+        });
+    }
+
+    getTierNames(appName) {
+        return this.backendSrv.datasourceRequest({
+            url: this.url + '/controller/rest/applications/' + appName + '/tiers',
+            method: 'GET',
+            params: { output: 'json' }
+        }).then((response) => {
+            if (response.status === 200) {
+                return this.getFilteredNames('', response.data);
+            } else {
+                return [];
+            }
+
+        }).catch((error) => {
+            return [];
+        });
+    }
+
+    getNodeNames(appName, tierName) {
+        let url = this.url + '/controller/rest/applications/' + appName + '/nodes';
+        if (tierName) {
+            url = this.url + '/controller/rest/applications/' + appName + '/tiers/' + tierName + '/nodes';
+        }
+        return this.backendSrv.datasourceRequest({
+            url,
+            method: 'GET',
+            params: { output: 'json' }
+        }).then((response) => {
+            if (response.status === 200) {
+                return this.getFilteredNames('', response.data);
+            } else {
+                return [];
+            }
+
+        }).catch((error) => {
+            return [];
+        });
+    }
+
+    getTemplateNames(query) {
+        const possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes'];
+        const templatedQuery = this.templateSrv.replace(query);
+
+        if (templatedQuery.indexOf('.') > -1) {
+            const values = templatedQuery.split('.');
+            let appName;
+            let tierName;
+            let type;
+
+            if (values.length === 3) {
+                appName = values[0];
+                tierName = values[1];
+                type = values[2];
+            } else {
+                appName = values[0];
+                type = values[1];
+            }
+            //console.log(appName, tierName, type);
+
+            if (possibleQueries.indexOf(type) === -1) {
+                appEvents.emit('alert-error',
+                    ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Nodes']);
+            } else {
+                switch (type) {
+                    case 'BusinessTransactions':
+                        return this.getBusinessTransactionNames(appName, tierName);
+                    case 'Tiers':
+                        return this.getTierNames(appName);
+                    case 'Nodes':
+                        return this.getNodeNames(appName, tierName);
+                    default:
+                        appEvents.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, Tiers or Nodes"]);
+
+                }
+            }
+
+        } else {
+            return this.getApplicationNames('');
+        }
+
+    }
+
     getApplicationNames(query) {
         const templatedQuery = this.templateSrv.replace(query);
         return this.backendSrv.datasourceRequest({
@@ -163,7 +274,10 @@ export class AppDynamicsSDK {
 
     getMetricNames(app, query) {
         const templatedApp = this.templateSrv.replace(app);
-        const templatedQuery = this.templateSrv.replace(query);
+        let templatedQuery = this.templateSrv.replace(query);
+        templatedQuery = utils.getFirstTemplated(templatedQuery);
+        //console.log('TEMPLATED QUERY', templatedQuery);
+
         const params = { output: 'json' };
         if (query.indexOf('|') > -1) {
             params['metric-path'] = templatedQuery;
@@ -202,5 +316,13 @@ export class AppDynamicsSDK {
                     || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
             });
         }
+    }
+
+    getBTsInTier(tierName, arrayResponse) {
+
+        // We only want the BTs that belong to the tier
+        return arrayResponse.filter((element) => {
+            return element.tierName.toLowerCase() === tierName.toLowerCase();
+        });
     }
 }

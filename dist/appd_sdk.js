@@ -2,11 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var dateMath = require("app/core/utils/datemath");
 var app_events_1 = require("app/core/app_events");
+var utils = require("./utils");
 /*
     This is the class where all AppD logic should reside.
     This gets Application Names, Metric Names and queries the API
 */
-var AppDynamicsSDK = /** @class */ (function () {
+var AppDynamicsSDK = (function () {
     function AppDynamicsSDK(instanceSettings, backendSrv, templateSrv) {
         this.backendSrv = backendSrv;
         this.templateSrv = templateSrv;
@@ -28,7 +29,18 @@ var AppDynamicsSDK = /** @class */ (function () {
                     resolve();
                 }
                 else {
-                    _this.getMetrics(target, grafanaResponse, startTime, endTime, options, resolve);
+                    var templatedApp_1 = _this.templateSrv.replace(target.application, options.scopedVars, 'regex');
+                    var templatedMetric = _this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
+                    // We need to also account for every combination of templated metric
+                    var allQueries = utils.resolveMetricQueries(templatedMetric);
+                    var everyRequest = allQueries.map(function (query) {
+                        return new Promise(function (innerResolve) {
+                            _this.getMetrics(templatedApp_1, query, target, grafanaResponse, startTime, endTime, options, innerResolve);
+                        });
+                    });
+                    return Promise.all(everyRequest).then(function () {
+                        resolve();
+                    });
                 }
             });
         });
@@ -36,11 +48,9 @@ var AppDynamicsSDK = /** @class */ (function () {
             return grafanaResponse;
         });
     };
-    AppDynamicsSDK.prototype.getMetrics = function (target, grafanaResponse, startTime, endTime, options, callback) {
+    AppDynamicsSDK.prototype.getMetrics = function (templatedApp, templatedMetric, target, grafanaResponse, startTime, endTime, options, callback) {
         var _this = this;
-        var templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
-        var templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
-        console.log(options);
+        //console.log(`Getting metric: App = ${templatedApp} Metric = ${templatedMetric}`);
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
             method: 'GET',
@@ -75,13 +85,12 @@ var AppDynamicsSDK = /** @class */ (function () {
                 }
                 grafanaResponse.data.push({
                     target: legend,
-                    datapoints: _this.convertMetricData(metricElement, callback)
+                    datapoints: _this.convertMetricData(metricElement)
                 });
             });
         }).then(function () {
             callback();
-        })
-            .catch(function (err) {
+        }).catch(function (err) {
             var errMsg = 'Error getting metrics.';
             if (err.data) {
                 if (err.data.indexOf('Invalid application name') > -1) {
@@ -93,7 +102,7 @@ var AppDynamicsSDK = /** @class */ (function () {
         });
     };
     // This helper method just converts the AppD response to the Grafana format
-    AppDynamicsSDK.prototype.convertMetricData = function (metricElement, resolve) {
+    AppDynamicsSDK.prototype.convertMetricData = function (metricElement) {
         var responseArray = [];
         metricElement.metricValues.forEach(function (metricValue) {
             responseArray.push([metricValue.value, metricValue.startTimeInMillis]);
@@ -118,6 +127,105 @@ var AppDynamicsSDK = /** @class */ (function () {
     AppDynamicsSDK.prototype.annotationQuery = function () {
         // TODO implement annotationQuery
     };
+    AppDynamicsSDK.prototype.getBusinessTransactionNames = function (appName, tierName) {
+        var _this = this;
+        var url = this.url + '/controller/rest/applications/' + appName + '/business-transactions';
+        return this.backendSrv.datasourceRequest({
+            url: url,
+            method: 'GET',
+            params: { output: 'json' }
+        }).then(function (response) {
+            if (response.status === 200) {
+                if (tierName) {
+                    return _this.getBTsInTier(tierName, response.data);
+                }
+                else {
+                    return _this.getFilteredNames('', response.data);
+                }
+            }
+            else {
+                return [];
+            }
+        }).catch(function (error) {
+            return [];
+        });
+    };
+    AppDynamicsSDK.prototype.getTierNames = function (appName) {
+        var _this = this;
+        return this.backendSrv.datasourceRequest({
+            url: this.url + '/controller/rest/applications/' + appName + '/tiers',
+            method: 'GET',
+            params: { output: 'json' }
+        }).then(function (response) {
+            if (response.status === 200) {
+                return _this.getFilteredNames('', response.data);
+            }
+            else {
+                return [];
+            }
+        }).catch(function (error) {
+            return [];
+        });
+    };
+    AppDynamicsSDK.prototype.getNodeNames = function (appName, tierName) {
+        var _this = this;
+        var url = this.url + '/controller/rest/applications/' + appName + '/nodes';
+        if (tierName) {
+            url = this.url + '/controller/rest/applications/' + appName + '/tiers/' + tierName + '/nodes';
+        }
+        return this.backendSrv.datasourceRequest({
+            url: url,
+            method: 'GET',
+            params: { output: 'json' }
+        }).then(function (response) {
+            if (response.status === 200) {
+                return _this.getFilteredNames('', response.data);
+            }
+            else {
+                return [];
+            }
+        }).catch(function (error) {
+            return [];
+        });
+    };
+    AppDynamicsSDK.prototype.getTemplateNames = function (query) {
+        var possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes'];
+        var templatedQuery = this.templateSrv.replace(query);
+        if (templatedQuery.indexOf('.') > -1) {
+            var values = templatedQuery.split('.');
+            var appName = void 0;
+            var tierName = void 0;
+            var type = void 0;
+            if (values.length === 3) {
+                appName = values[0];
+                tierName = values[1];
+                type = values[2];
+            }
+            else {
+                appName = values[0];
+                type = values[1];
+            }
+            //console.log(appName, tierName, type);
+            if (possibleQueries.indexOf(type) === -1) {
+                app_events_1.default.emit('alert-error', ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Nodes']);
+            }
+            else {
+                switch (type) {
+                    case 'BusinessTransactions':
+                        return this.getBusinessTransactionNames(appName, tierName);
+                    case 'Tiers':
+                        return this.getTierNames(appName);
+                    case 'Nodes':
+                        return this.getNodeNames(appName, tierName);
+                    default:
+                        app_events_1.default.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, Tiers or Nodes"]);
+                }
+            }
+        }
+        else {
+            return this.getApplicationNames('');
+        }
+    };
     AppDynamicsSDK.prototype.getApplicationNames = function (query) {
         var _this = this;
         var templatedQuery = this.templateSrv.replace(query);
@@ -140,6 +248,8 @@ var AppDynamicsSDK = /** @class */ (function () {
         var _this = this;
         var templatedApp = this.templateSrv.replace(app);
         var templatedQuery = this.templateSrv.replace(query);
+        templatedQuery = utils.getFirstTemplated(templatedQuery);
+        //console.log('TEMPLATED QUERY', templatedQuery);
         var params = { output: 'json' };
         if (query.indexOf('|') > -1) {
             params['metric-path'] = templatedQuery;
@@ -174,6 +284,12 @@ var AppDynamicsSDK = /** @class */ (function () {
                     || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
             });
         }
+    };
+    AppDynamicsSDK.prototype.getBTsInTier = function (tierName, arrayResponse) {
+        // We only want the BTs that belong to the tier
+        return arrayResponse.filter(function (element) {
+            return element.tierName.toLowerCase() === tierName.toLowerCase();
+        });
     };
     return AppDynamicsSDK;
 }());
