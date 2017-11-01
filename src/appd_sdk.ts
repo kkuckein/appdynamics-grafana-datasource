@@ -39,18 +39,23 @@ export class AppDynamicsSDK {
                 } else {
                     const templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
                     const templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
-
-                    // We need to also account for every combination of templated metric
-                    const allQueries = utils.resolveMetricQueries(templatedMetric);
-                    const everyRequest = allQueries.map((query) => {
+                    if (templatedMetric === target.metric) {
                         return new Promise((innerResolve) => {
-                            this.getMetrics(templatedApp, query, target, grafanaResponse, startTime, endTime, options, innerResolve);
+                            this.getMetrics(templatedApp, templatedMetric, target, grafanaResponse, startTime, endTime, options, resolve);
                         });
-                    });
+                    } else {
 
-                    return Promise.all(everyRequest).then(() => {
-                        resolve();
-                    });
+                        // We need to also account for every combination of templated metric
+                        const allQueries = utils.resolveMetricQueries(templatedMetric);
+                        const everyRequest = allQueries.map((query) => {
+                            return new Promise((innerResolve) => {
+                                this.getMetrics(templatedApp, query, target, grafanaResponse, startTime, endTime, options, innerResolve);
+                            });
+                        });
+                        return Promise.all(everyRequest).then(() => {
+                            resolve();
+                        });
+                    }
                 }
             });
         });

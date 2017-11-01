@@ -30,17 +30,24 @@ var AppDynamicsSDK = (function () {
                 }
                 else {
                     var templatedApp_1 = _this.templateSrv.replace(target.application, options.scopedVars, 'regex');
-                    var templatedMetric = _this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
-                    // We need to also account for every combination of templated metric
-                    var allQueries = utils.resolveMetricQueries(templatedMetric);
-                    var everyRequest = allQueries.map(function (query) {
+                    var templatedMetric_1 = _this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
+                    if (templatedMetric_1 === target.metric) {
                         return new Promise(function (innerResolve) {
-                            _this.getMetrics(templatedApp_1, query, target, grafanaResponse, startTime, endTime, options, innerResolve);
+                            _this.getMetrics(templatedApp_1, templatedMetric_1, target, grafanaResponse, startTime, endTime, options, resolve);
                         });
-                    });
-                    return Promise.all(everyRequest).then(function () {
-                        resolve();
-                    });
+                    }
+                    else {
+                        // We need to also account for every combination of templated metric
+                        var allQueries = utils.resolveMetricQueries(templatedMetric_1);
+                        var everyRequest = allQueries.map(function (query) {
+                            return new Promise(function (innerResolve) {
+                                _this.getMetrics(templatedApp_1, query, target, grafanaResponse, startTime, endTime, options, innerResolve);
+                            });
+                        });
+                        return Promise.all(everyRequest).then(function () {
+                            resolve();
+                        });
+                    }
                 }
             });
         });
