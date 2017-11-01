@@ -50,7 +50,7 @@ var AppDynamicsSDK = (function () {
     };
     AppDynamicsSDK.prototype.getMetrics = function (templatedApp, templatedMetric, target, grafanaResponse, startTime, endTime, options, callback) {
         var _this = this;
-        console.log("Getting metric: App = " + templatedApp + " Metric = " + templatedMetric);
+        //console.log(`Getting metric: App = ${templatedApp} Metric = ${templatedMetric}`);
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
             method: 'GET',
@@ -205,7 +205,7 @@ var AppDynamicsSDK = (function () {
                 appName = values[0];
                 type = values[1];
             }
-            console.log(appName, tierName, type);
+            //console.log(appName, tierName, type);
             if (possibleQueries.indexOf(type) === -1) {
                 app_events_1.default.emit('alert-error', ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Nodes']);
             }
@@ -249,7 +249,7 @@ var AppDynamicsSDK = (function () {
         var templatedApp = this.templateSrv.replace(app);
         var templatedQuery = this.templateSrv.replace(query);
         templatedQuery = utils.getFirstTemplated(templatedQuery);
-        console.log('TEMPLATED QUERY', templatedQuery);
+        //console.log('TEMPLATED QUERY', templatedQuery);
         var params = { output: 'json' };
         if (query.indexOf('|') > -1) {
             params['metric-path'] = templatedQuery;

@@ -62,7 +62,7 @@ export class AppDynamicsSDK {
     }
 
     getMetrics(templatedApp, templatedMetric, target, grafanaResponse, startTime, endTime, options, callback) {
-        console.log(`Getting metric: App = ${templatedApp} Metric = ${templatedMetric}`);
+        //console.log(`Getting metric: App = ${templatedApp} Metric = ${templatedMetric}`);
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
             method: 'GET',
@@ -229,7 +229,7 @@ export class AppDynamicsSDK {
                 appName = values[0];
                 type = values[1];
             }
-            console.log(appName, tierName, type);
+            //console.log(appName, tierName, type);
 
             if (possibleQueries.indexOf(type) === -1) {
                 appEvents.emit('alert-error',
@@ -276,7 +276,7 @@ export class AppDynamicsSDK {
         const templatedApp = this.templateSrv.replace(app);
         let templatedQuery = this.templateSrv.replace(query);
         templatedQuery = utils.getFirstTemplated(templatedQuery);
-        console.log('TEMPLATED QUERY', templatedQuery);
+        //console.log('TEMPLATED QUERY', templatedQuery);
 
         const params = { output: 'json' };
         if (query.indexOf('|') > -1) {
