@@ -151,14 +151,19 @@ export class AppDynamicsSDK {
         // TODO implement annotationQuery
     }
 
-    getBusinessTransactionNames(appName) {
+    getBusinessTransactionNames(appName, tierName) {
+        const url = this.url + '/controller/rest/applications/' + appName + '/business-transactions';
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/controller/rest/applications/' + appName + '/business-transactions',
+            url,
             method: 'GET',
             params: { output: 'json' }
         }).then((response) => {
             if (response.status === 200) {
-                return this.getFilteredNames('', response.data);
+                if (tierName) {
+                    return this.getBTsInTier(tierName, response.data);
+                } else {
+                    return this.getFilteredNames('', response.data);
+                }
             } else {
                 return [];
             }
@@ -185,9 +190,13 @@ export class AppDynamicsSDK {
         });
     }
 
-    getNodeNames(appName) {
+    getNodeNames(appName, tierName) {
+        let url = this.url + '/controller/rest/applications/' + appName + '/nodes';
+        if (tierName) {
+            url = this.url + '/controller/rest/applications/' + appName + '/tiers/' + tierName + '/nodes';
+        }
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/controller/rest/applications/' + appName + '/nodes',
+            url,
             method: 'GET',
             params: { output: 'json' }
         }).then((response) => {
@@ -207,8 +216,20 @@ export class AppDynamicsSDK {
         const templatedQuery = this.templateSrv.replace(query);
 
         if (templatedQuery.indexOf('.') > -1) {
-            const appName = templatedQuery.split('.')[0];
-            const type = templatedQuery.split('.')[1];
+            const values = templatedQuery.split('.');
+            let appName;
+            let tierName;
+            let type;
+
+            if (values.length === 3) {
+                appName = values[0];
+                tierName = values[1];
+                type = values[2];
+            } else {
+                appName = values[0];
+                type = values[1];
+            }
+            console.log(appName, tierName, type);
 
             if (possibleQueries.indexOf(type) === -1) {
                 appEvents.emit('alert-error',
@@ -216,11 +237,11 @@ export class AppDynamicsSDK {
             } else {
                 switch (type) {
                     case 'BusinessTransactions':
-                        return this.getBusinessTransactionNames(appName);
+                        return this.getBusinessTransactionNames(appName, tierName);
                     case 'Tiers':
                         return this.getTierNames(appName);
                     case 'Nodes':
-                        return this.getNodeNames(appName);
+                        return this.getNodeNames(appName, tierName);
                     default:
                         appEvents.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, Tiers or Nodes"]);
 
@@ -295,5 +316,13 @@ export class AppDynamicsSDK {
                     || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
             });
         }
+    }
+
+    getBTsInTier(tierName, arrayResponse) {
+
+        // We only want the BTs that belong to the tier
+        return arrayResponse.filter((element) => {
+            return element.tierName.toLowerCase() === tierName.toLowerCase();
+        });
     }
 }

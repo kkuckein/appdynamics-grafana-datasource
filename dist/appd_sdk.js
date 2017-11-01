@@ -127,15 +127,21 @@ var AppDynamicsSDK = (function () {
     AppDynamicsSDK.prototype.annotationQuery = function () {
         // TODO implement annotationQuery
     };
-    AppDynamicsSDK.prototype.getBusinessTransactionNames = function (appName) {
+    AppDynamicsSDK.prototype.getBusinessTransactionNames = function (appName, tierName) {
         var _this = this;
+        var url = this.url + '/controller/rest/applications/' + appName + '/business-transactions';
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/controller/rest/applications/' + appName + '/business-transactions',
+            url: url,
             method: 'GET',
             params: { output: 'json' }
         }).then(function (response) {
             if (response.status === 200) {
-                return _this.getFilteredNames('', response.data);
+                if (tierName) {
+                    return _this.getBTsInTier(tierName, response.data);
+                }
+                else {
+                    return _this.getFilteredNames('', response.data);
+                }
             }
             else {
                 return [];
@@ -161,10 +167,14 @@ var AppDynamicsSDK = (function () {
             return [];
         });
     };
-    AppDynamicsSDK.prototype.getNodeNames = function (appName) {
+    AppDynamicsSDK.prototype.getNodeNames = function (appName, tierName) {
         var _this = this;
+        var url = this.url + '/controller/rest/applications/' + appName + '/nodes';
+        if (tierName) {
+            url = this.url + '/controller/rest/applications/' + appName + '/tiers/' + tierName + '/nodes';
+        }
         return this.backendSrv.datasourceRequest({
-            url: this.url + '/controller/rest/applications/' + appName + '/nodes',
+            url: url,
             method: 'GET',
             params: { output: 'json' }
         }).then(function (response) {
@@ -182,19 +192,31 @@ var AppDynamicsSDK = (function () {
         var possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes'];
         var templatedQuery = this.templateSrv.replace(query);
         if (templatedQuery.indexOf('.') > -1) {
-            var appName = templatedQuery.split('.')[0];
-            var type = templatedQuery.split('.')[1];
+            var values = templatedQuery.split('.');
+            var appName = void 0;
+            var tierName = void 0;
+            var type = void 0;
+            if (values.length === 3) {
+                appName = values[0];
+                tierName = values[1];
+                type = values[2];
+            }
+            else {
+                appName = values[0];
+                type = values[1];
+            }
+            console.log(appName, tierName, type);
             if (possibleQueries.indexOf(type) === -1) {
                 app_events_1.default.emit('alert-error', ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Nodes']);
             }
             else {
                 switch (type) {
                     case 'BusinessTransactions':
-                        return this.getBusinessTransactionNames(appName);
+                        return this.getBusinessTransactionNames(appName, tierName);
                     case 'Tiers':
                         return this.getTierNames(appName);
                     case 'Nodes':
-                        return this.getNodeNames(appName);
+                        return this.getNodeNames(appName, tierName);
                     default:
                         app_events_1.default.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, Tiers or Nodes"]);
                 }
@@ -262,6 +284,12 @@ var AppDynamicsSDK = (function () {
                     || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
             });
         }
+    };
+    AppDynamicsSDK.prototype.getBTsInTier = function (tierName, arrayResponse) {
+        // We only want the BTs that belong to the tier
+        return arrayResponse.filter(function (element) {
+            return element.tierName.toLowerCase() === tierName.toLowerCase();
+        });
     };
     return AppDynamicsSDK;
 }());
