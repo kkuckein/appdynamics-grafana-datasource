@@ -29,7 +29,18 @@ var AppDynamicsSDK = (function () {
                     resolve();
                 }
                 else {
-                    _this.getMetrics(target, grafanaResponse, startTime, endTime, options, resolve);
+                    var templatedApp_1 = _this.templateSrv.replace(target.application, options.scopedVars, 'regex');
+                    var templatedMetric = _this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
+                    // We need to also account for every combination of templated metric
+                    var allQueries = utils.resolveMetricQueries(templatedMetric);
+                    var everyRequest = allQueries.map(function (query) {
+                        return new Promise(function (innerResolve) {
+                            _this.getMetrics(templatedApp_1, query, target, grafanaResponse, startTime, endTime, options, innerResolve);
+                        });
+                    });
+                    return Promise.all(everyRequest).then(function () {
+                        resolve();
+                    });
                 }
             });
         });
@@ -37,11 +48,9 @@ var AppDynamicsSDK = (function () {
             return grafanaResponse;
         });
     };
-    AppDynamicsSDK.prototype.getMetrics = function (target, grafanaResponse, startTime, endTime, options, callback) {
+    AppDynamicsSDK.prototype.getMetrics = function (templatedApp, templatedMetric, target, grafanaResponse, startTime, endTime, options, callback) {
         var _this = this;
-        var templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
-        var templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
-        console.log(options);
+        console.log("Getting metric: App = " + templatedApp + " Metric = " + templatedMetric);
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
             method: 'GET',
@@ -76,13 +85,12 @@ var AppDynamicsSDK = (function () {
                 }
                 grafanaResponse.data.push({
                     target: legend,
-                    datapoints: _this.convertMetricData(metricElement, callback)
+                    datapoints: _this.convertMetricData(metricElement)
                 });
             });
         }).then(function () {
             callback();
-        })
-            .catch(function (err) {
+        }).catch(function (err) {
             var errMsg = 'Error getting metrics.';
             if (err.data) {
                 if (err.data.indexOf('Invalid application name') > -1) {
@@ -94,7 +102,7 @@ var AppDynamicsSDK = (function () {
         });
     };
     // This helper method just converts the AppD response to the Grafana format
-    AppDynamicsSDK.prototype.convertMetricData = function (metricElement, resolve) {
+    AppDynamicsSDK.prototype.convertMetricData = function (metricElement) {
         var responseArray = [];
         metricElement.metricValues.forEach(function (metricValue) {
             responseArray.push([metricValue.value, metricValue.startTimeInMillis]);
@@ -193,7 +201,6 @@ var AppDynamicsSDK = (function () {
             }
         }
         else {
-            console.log('Getting Applications');
             return this.getApplicationNames('');
         }
     };
@@ -220,6 +227,7 @@ var AppDynamicsSDK = (function () {
         var templatedApp = this.templateSrv.replace(app);
         var templatedQuery = this.templateSrv.replace(query);
         templatedQuery = utils.getFirstTemplated(templatedQuery);
+        console.log('TEMPLATED QUERY', templatedQuery);
         var params = { output: 'json' };
         if (query.indexOf('|') > -1) {
             params['metric-path'] = templatedQuery;

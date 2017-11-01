@@ -37,7 +37,20 @@ export class AppDynamicsSDK {
                 if (target.hide) { // If the user clicked on the eye icon to hide, don't fetch the metrics.
                     resolve();
                 } else {
-                    this.getMetrics(target, grafanaResponse, startTime, endTime, options, resolve);
+                    const templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
+                    const templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
+
+                    // We need to also account for every combination of templated metric
+                    const allQueries = utils.resolveMetricQueries(templatedMetric);
+                    const everyRequest = allQueries.map((query) => {
+                        return new Promise((innerResolve) => {
+                            this.getMetrics(templatedApp, query, target, grafanaResponse, startTime, endTime, options, innerResolve);
+                        });
+                    });
+
+                    return Promise.all(everyRequest).then(() => {
+                        resolve();
+                    });
                 }
             });
         });
@@ -48,13 +61,8 @@ export class AppDynamicsSDK {
 
     }
 
-    getMetrics(target, grafanaResponse, startTime, endTime, options, callback) {
-
-        const templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
-        const templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
-
-        console.log(options);
-
+    getMetrics(templatedApp, templatedMetric, target, grafanaResponse, startTime, endTime, options, callback) {
+        console.log(`Getting metric: App = ${templatedApp} Metric = ${templatedMetric}`);
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications/' + templatedApp + '/metric-data',
             method: 'GET',
@@ -95,27 +103,26 @@ export class AppDynamicsSDK {
 
                 grafanaResponse.data.push({
                     target: legend,
-                    datapoints: this.convertMetricData(metricElement, callback)
+                    datapoints: this.convertMetricData(metricElement)
                 });
             });
         }).then(() => {
             callback();
-        })
-            .catch((err) => { // If we are here, we were unable to get metrics
+        }).catch((err) => { // If we are here, we were unable to get metrics
 
-                let errMsg = 'Error getting metrics.';
-                if (err.data) {
-                    if (err.data.indexOf('Invalid application name') > -1) {
-                        errMsg = `Invalid application name ${templatedApp}`;
-                    }
+            let errMsg = 'Error getting metrics.';
+            if (err.data) {
+                if (err.data.indexOf('Invalid application name') > -1) {
+                    errMsg = `Invalid application name ${templatedApp}`;
                 }
-                appEvents.emit('alert-error', ['Error', errMsg]);
-                callback();
-            });
+            }
+            appEvents.emit('alert-error', ['Error', errMsg]);
+            callback();
+        });
     }
 
     // This helper method just converts the AppD response to the Grafana format
-    convertMetricData(metricElement, resolve) {
+    convertMetricData(metricElement) {
         const responseArray = [];
 
         metricElement.metricValues.forEach((metricValue) => {
@@ -221,7 +228,6 @@ export class AppDynamicsSDK {
             }
 
         } else {
-            console.log('Getting Applications');
             return this.getApplicationNames('');
         }
 
@@ -249,6 +255,7 @@ export class AppDynamicsSDK {
         const templatedApp = this.templateSrv.replace(app);
         let templatedQuery = this.templateSrv.replace(query);
         templatedQuery = utils.getFirstTemplated(templatedQuery);
+        console.log('TEMPLATED QUERY', templatedQuery);
 
         const params = { output: 'json' };
         if (query.indexOf('|') > -1) {

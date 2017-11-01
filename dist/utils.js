@@ -5,6 +5,11 @@ function isContainsBraces(query) {
     return bracesPattern.test(query);
 }
 exports.isContainsBraces = isContainsBraces;
+function isContainsParenthesis(query) {
+    var parenthesisPattern = /.*\(.+\).*?$/;
+    return parenthesisPattern.test(query);
+}
+exports.isContainsParenthesis = isContainsParenthesis;
 function splitTemplateQuery(query) {
     var splitPattern = /\{[^\{\}]*\}|\{\/.*\/\}/g;
     var split;
@@ -20,13 +25,31 @@ function splitTemplateQuery(query) {
     return split;
 }
 exports.splitTemplateQuery = splitTemplateQuery;
+function resolveMetricQueries(query) {
+    var queries = [];
+    var splitPattern = /\([^\()\)]*\)|\(\/.*\/\)/g;
+    if (isContainsParenthesis(query)) {
+        var matches = query.match(splitPattern);
+        matches.forEach(function (element) {
+            var allPatterns = new RegExp(element, 'g');
+            var possibleElements = element.match(allPatterns);
+            possibleElements.forEach(function (possibleElement) {
+                queries.push(query.replace(element, possibleElement));
+            });
+        });
+    }
+    else {
+        return [query];
+    }
+    return queries;
+}
+exports.resolveMetricQueries = resolveMetricQueries;
 function getFirstTemplated(query) {
     var allTemplated = splitTemplateQuery(query);
     var splitPattern = /\{[^\{\}]*\}|\{\/.*\/\}/g;
     if (isContainsBraces(query)) {
         var matches = query.match(splitPattern);
         for (var i = 0; i < matches.length; i++) {
-            console.log(i, 'QUERY\t', query, 'REGEX\t', matches[i], 'RAW\t', allTemplated[i][0]);
             query = query.replace(matches[i], allTemplated[i][0]);
         }
     }
