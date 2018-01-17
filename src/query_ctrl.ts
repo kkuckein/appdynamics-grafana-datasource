@@ -66,8 +66,8 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
             this.metricSegments.length = segmentIndex + 1;
         }
 
-        // Only add a new one if it is the last and it is not a Leaf.
-        if ( segmentIndex === this.metricSegments.length - 1 && metricSegment.expandable) {
+        // Only add a new one if it is the last and it is not a Leaf and not a '*'.
+        if ( segmentIndex === this.metricSegments.length - 1 && metricSegment.expandable && metricSegment.value !== '*') {
             this.metricSegments.push(this.uiSegmentSrv.newSelectMetric());
         }
 
@@ -98,6 +98,11 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
 
     toggleEditorMode() {
         this.target.rawQuery = !this.target.rawQuery;
+        if (!this.target.rawQuery) {
+            // refresh target metric from segments (we discard the changes done in raw query mode)
+            this.target.metric = this.metricSegments.map( (segment) =>  segment.value).join('|');
+            this.panelCtrl.refresh();
+        }
     }
 
     onChangeInternal() {
