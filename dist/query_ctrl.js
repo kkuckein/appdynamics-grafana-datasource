@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var sdk_1 = require("app/plugins/sdk");
-var AppDynamicsQueryCtrl = (function (_super) {
+var AppDynamicsQueryCtrl = /** @class */ (function (_super) {
     __extends(AppDynamicsQueryCtrl, _super);
     function AppDynamicsQueryCtrl($scope, $injector, $q, uiSegmentSrv, templateSrv) {
         var _this = _super.call(this, $scope, $injector) || this;
@@ -23,8 +23,8 @@ var AppDynamicsQueryCtrl = (function (_super) {
             if (segmentIndex < _this.metricSegments.length - 1 && metricSegment.value !== '*') {
                 _this.metricSegments.length = segmentIndex + 1;
             }
-            // Only add a new one if it is the last and it is not a Leaf.
-            if (segmentIndex === _this.metricSegments.length - 1 && metricSegment.expandable) {
+            // Only add a new one if it is the last and it is not a Leaf and not a '*'.
+            if (segmentIndex === _this.metricSegments.length - 1 && metricSegment.expandable && metricSegment.value !== '*') {
                 _this.metricSegments.push(_this.uiSegmentSrv.newSelectMetric());
             }
             // If this is a Leaf, we don't need the segments after it.
@@ -82,6 +82,11 @@ var AppDynamicsQueryCtrl = (function (_super) {
     };
     AppDynamicsQueryCtrl.prototype.toggleEditorMode = function () {
         this.target.rawQuery = !this.target.rawQuery;
+        if (!this.target.rawQuery) {
+            // refresh target metric from segments (we discard the changes done in raw query mode)
+            this.target.metric = this.metricSegments.map(function (segment) { return segment.value; }).join('|');
+            this.panelCtrl.refresh();
+        }
     };
     AppDynamicsQueryCtrl.prototype.onChangeInternal = function () {
         this.panelCtrl.refresh(); // Asks the panel to refresh data.

@@ -7,7 +7,7 @@ var utils = require("./utils");
     This is the class where all AppD logic should reside.
     This gets Application Names, Metric Names and queries the API
 */
-var AppDynamicsSDK = (function () {
+var AppDynamicsSDK = /** @class */ (function () {
     function AppDynamicsSDK(instanceSettings, backendSrv, templateSrv) {
         this.backendSrv = backendSrv;
         this.templateSrv = templateSrv;
