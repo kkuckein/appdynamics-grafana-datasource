@@ -1,40 +1,7 @@
-# AppDynamics Grafana Datasource
+## AppDynamics Data Source
 
-AppDynamics datasource for grafana.
+AppDynamics Data Source for Grafana
 
-![example_dashboard](http://imgur.com/MIBYyCY.png)
+This software is forked from the original plugin [created by David Lopes](https://github.com/dlopes7). [While this version of the data source is free and open-source, the original plugin was converted to a Grafana Premium Plugin.](https://github.com/grafana/grafana-plugin-repository/pull/189) If you require official support or the latest updates by the Grafana team, have a look at [Grafana's support subscription plans](https://grafana.com/services/support).
 
-## Grafana CLI
-
-``grafana-cli plugins install dlopes7-appdynamics-datasource``
-
-## With docker
-
-With the command below, grafana will start on localhost:3000 (192.168.99.100:3000 if on windows)
-
-``docker run -d -p 3000:3000 --name grafana -e "GF_INSTALL_PLUGINS=dlopes7-appdynamics-datasource" grafana/grafana``
-
-## Note on the Datasource config
-
-Use proxy access (to avoid CORS and users looking up your password) and basic authentication.
-
-![config](http://imgur.com/ayL8kFO.png)
-
-## For the devs out there:
-
-1. ``git clone https://github.com/dlopes7/appdynamics-grafana-datasource``
-2. ``docker run -d -p 3000:3000 --name grafana -v `pwd`:/var/lib/grafana/plugins/appdynamics-grafana-datasource/ grafana/grafana``
-
-
-## Templating
-
-The supported template queries for now are:
-
-1. `Applications` (All Applications)
-2. `AppName.BusinessTransactions` (All BTs for the Application Name)
-3. `AppName.Tiers` (All Tiers for the Application Name)
-4. `AppName.Nodes` (All Nodes for the Application Name)
-5. `AppName.TierName.BusinessTransactions` (All BTs for a specific Tier)
-6. `AppName.TierName.Nodes` (All Nodes for a specific Tier)
-
-![templating](https://imgur.com/U0OGYkO.png)
+This software is not affiliated with or supported by AppDynamics.
