@@ -15,4 +15,4 @@ Paste the whole content of this repro into this folder
 restart your Grafana instance
 
 Note on Multi-Tenant AppDynamics Controller
-Use Auth Type "Basic" and <user>@<tendant> 
+Use Auth Type "Basic" and user@tendant as user name
